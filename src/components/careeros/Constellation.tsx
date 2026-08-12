@@ -71,7 +71,7 @@ export function Constellation() {
             />
           ))}
           {NODES.map((n, i) => {
-            const m = NODES[(i + 1) % NODES.length];
+            const m = NODES[(i + 1) % NODES.length]!;
             return (
               <line
                 key={`arc-${n.label}`}
