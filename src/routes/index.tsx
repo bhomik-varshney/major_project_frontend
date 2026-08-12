@@ -1,24 +1,55 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-// No head() here: the home route inherits title/description/og/twitter from
-// __root.tsx, and ships no og:image so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
+import { Nav } from "@/components/careeros/Nav";
+import { Hero } from "@/components/careeros/Hero";
+import { TrustStrip } from "@/components/careeros/TrustStrip";
+import { Understands } from "@/components/careeros/Understands";
+import { Agents } from "@/components/careeros/Agents";
+import { Opportunities } from "@/components/careeros/Opportunities";
+import { SkillGap } from "@/components/careeros/SkillGap";
+import { ApplicationPreview } from "@/components/careeros/ApplicationPreview";
+import { CommandCenter } from "@/components/careeros/CommandCenter";
+import { Loop } from "@/components/careeros/Loop";
+import { Roadmap } from "@/components/careeros/Roadmap";
+import { FinalCTA } from "@/components/careeros/FinalCTA";
+import { Footer } from "@/components/careeros/Footer";
+
+const TITLE = "CareerOS — Agentic AI Career Companion";
+const DESCRIPTION =
+  "CareerOS understands your profile, discovers the right opportunities, evaluates fit, and moves you from goals to growth.";
+
 export const Route = createFileRoute("/")({
+  head: () => ({
+    meta: [
+      { title: TITLE },
+      { name: "description", content: DESCRIPTION },
+      { property: "og:title", content: TITLE },
+      { property: "og:description", content: DESCRIPTION },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+  }),
   component: Index,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
 function Index() {
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
+    <div className="relative min-h-screen bg-background">
+      <Nav />
+      <main>
+        <Hero />
+        <TrustStrip />
+        <Understands />
+        <Agents />
+        <Opportunities />
+        <SkillGap />
+        <ApplicationPreview />
+        <CommandCenter />
+        <Loop />
+        <Roadmap />
+        <FinalCTA />
+      </main>
+      <Footer />
     </div>
   );
 }
