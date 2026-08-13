@@ -3,6 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Nav } from "@/components/careeros/Nav";
 import { Hero } from "@/components/careeros/Hero";
 import { TrustStrip } from "@/components/careeros/TrustStrip";
+import { Problem } from "@/components/careeros/Problem";
 import { Understands } from "@/components/careeros/Understands";
 import { Agents } from "@/components/careeros/Agents";
 import { Opportunities } from "@/components/careeros/Opportunities";
@@ -35,21 +36,31 @@ export const Route = createFileRoute("/")({
 function Index() {
   return (
     <div className="relative min-h-screen bg-background">
-      <Nav />
-      <main>
-        <Hero />
-        <TrustStrip />
-        <Understands />
-        <Agents />
-        <Opportunities />
-        <SkillGap />
-        <ApplicationPreview />
-        <CommandCenter />
-        <Loop />
-        <Roadmap />
-        <FinalCTA />
-      </main>
-      <Footer />
+      {/* Fixed atmospheric ground + grain, behind everything. */}
+      <div className="atmosphere" aria-hidden="true" />
+      <div className="grain" aria-hidden="true" />
+
+      <div className="relative z-2">
+        <Nav />
+        <main>
+          <Hero />
+          <TrustStrip />
+          {/* 01 the problem → 02 the companion → 03 the constellation */}
+          <Problem />
+          <Agents />
+          <Understands />
+          {/* 04 discover → 05 understand → 06 act */}
+          <Opportunities />
+          <SkillGap />
+          <ApplicationPreview />
+          {/* 07 the surface → 08 the loop → horizon */}
+          <CommandCenter />
+          <Loop />
+          <Roadmap />
+          <FinalCTA />
+        </main>
+        <Footer />
+      </div>
     </div>
   );
 }

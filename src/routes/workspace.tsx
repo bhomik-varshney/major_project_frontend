@@ -1,15 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import {
-  ArrowLeft,
-  Brain,
-  Check,
-  Compass,
-  FileCheck2,
-  Radar,
-  Send,
-  Target,
-} from "lucide-react";
+import { ArrowLeft, Brain, Check, Compass, FileCheck2, Radar, Send, Target } from "lucide-react";
 
 import { Nav } from "@/components/careeros/Nav";
 import { Footer } from "@/components/careeros/Footer";
@@ -78,9 +69,8 @@ function Workspace() {
               Good afternoon, <span className="italic text-muted-foreground">Aarav.</span>
             </h1>
             <p className="mt-4 max-w-xl text-sm leading-relaxed text-muted-foreground sm:text-base">
-              Your goal is <span className="text-foreground">Staff Engineer within 18
-              months</span>. Six agents worked overnight. Nothing has been sent — every
-              action below waits for you.
+              Your goal is <span className="text-foreground">Staff Engineer within 18 months</span>.
+              Six agents worked overnight. Nothing has been sent — every action below waits for you.
             </p>
           </div>
           <Link to="/" className="btn-ghost shrink-0 !py-2.5 !text-sm">
@@ -90,9 +80,8 @@ function Workspace() {
         </div>
 
         <p className="relative mt-6 max-w-3xl rounded-xl border border-border bg-secondary/40 px-4 py-3 text-xs leading-relaxed text-muted-foreground">
-          This workspace is an interactive product demonstration. All profiles, scores
-          and companies shown are illustrative sample data — not real accounts,
-          listings, or performance claims.
+          This workspace is an interactive product demonstration. All profiles, scores and companies
+          shown are illustrative sample data — not real accounts, listings, or performance claims.
         </p>
 
         {/* Agent grid */}
@@ -110,12 +99,8 @@ function Workspace() {
                       <Icon className="h-4.5 w-4.5 text-accent" />
                     </span>
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-semibold tracking-tight">
-                        {a.name}
-                      </p>
-                      <p
-                        className={`mt-1 flex items-center gap-2 text-xs ${toneClass(a.tone)}`}
-                      >
+                      <p className="truncate text-sm font-semibold tracking-tight">{a.name}</p>
+                      <p className={`mt-1 flex items-center gap-2 text-xs ${toneClass(a.tone)}`}>
                         {a.tone === "done" ? null : (
                           <span className="animate-pulse-soft h-1.5 w-1.5 rounded-full bg-current" />
                         )}
@@ -148,19 +133,14 @@ function Workspace() {
               </h2>
               <ul className="surface mt-6 divide-y divide-border">
                 {QUEUE.map((q) => (
-                  <li
-                    key={q.role}
-                    className="flex items-center justify-between gap-4 px-5 py-4"
-                  >
+                  <li key={q.role} className="flex items-center justify-between gap-4 px-5 py-4">
                     <div className="min-w-0">
                       <p className="truncate text-sm font-medium">{q.role}</p>
                       <p className="mt-0.5 truncate text-xs text-muted-foreground">
                         {q.co} · {q.state}
                       </p>
                     </div>
-                    <span className="shrink-0 font-display text-lg text-accent">
-                      {q.score}
-                    </span>
+                    <span className="shrink-0 font-display text-lg text-accent">{q.score}</span>
                   </li>
                 ))}
               </ul>
@@ -179,9 +159,7 @@ function Workspace() {
                         type="button"
                         aria-pressed={isDone}
                         onClick={() =>
-                          setDone((d) =>
-                            d.includes(i) ? d.filter((x) => x !== i) : [...d, i],
-                          )
+                          setDone((d) => (d.includes(i) ? d.filter((x) => x !== i) : [...d, i]))
                         }
                         className="surface flex w-full items-start gap-3 p-4 text-left transition-colors duration-500 hover:border-accent/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       >
@@ -196,9 +174,7 @@ function Workspace() {
                         </span>
                         <span
                           className={`text-sm leading-relaxed ${
-                            isDone
-                              ? "text-muted-foreground line-through"
-                              : "text-foreground"
+                            isDone ? "text-muted-foreground line-through" : "text-foreground"
                           }`}
                         >
                           {t}

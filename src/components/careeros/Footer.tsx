@@ -9,7 +9,7 @@ const COLUMNS = [
 export function Footer() {
   return (
     <footer className="relative border-t border-border py-16">
-      <div className="mx-auto max-w-7xl px-6 lg:px-10">
+      <div className="shell">
         <div className="grid gap-12 lg:grid-cols-[1.4fr_2fr]">
           <div>
             <div className="flex items-center gap-3">
@@ -19,13 +19,9 @@ export function Footer() {
               <span className="font-display text-lg tracking-tight">CareerOS</span>
             </div>
             <p className="mt-4 max-w-sm text-sm leading-relaxed text-muted-foreground">
-              An agentic AI career operating system. Understand, discover, decide,
-              and grow.
+              An agentic AI career operating system. Understand, discover, decide, and grow.
             </p>
-            <form
-              className="mt-7 flex max-w-sm gap-2"
-              onSubmit={(e) => e.preventDefault()}
-            >
+            <form className="mt-7 flex max-w-sm gap-2" onSubmit={(e) => e.preventDefault()}>
               <input
                 type="email"
                 required

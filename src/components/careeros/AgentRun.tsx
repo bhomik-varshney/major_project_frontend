@@ -36,11 +36,7 @@ const STEPS: Step[] = [
   },
 ];
 
-const GOALS = [
-  "Become an AI Engineer",
-  "Move into Staff Engineer",
-  "Lead a platform team",
-];
+const GOALS = ["Become an AI Engineer", "Move into Staff Engineer", "Lead a platform team"];
 
 export function AgentRun({ compact = false }: { compact?: boolean }) {
   const reduced = usePrefersReducedMotion();
@@ -83,10 +79,7 @@ export function AgentRun({ compact = false }: { compact?: boolean }) {
   const done = step >= STEPS.length;
 
   return (
-    <div
-      ref={ref}
-      className={`surface overflow-hidden ${compact ? "" : "mx-auto max-w-4xl"}`}
-    >
+    <div ref={ref} className={`surface overflow-hidden ${compact ? "" : "mx-auto max-w-4xl"}`}>
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-5 py-4 sm:px-7">
         <DemoBadge label="Interactive product preview" />
         <div className="flex items-center gap-2">
@@ -112,9 +105,7 @@ export function AgentRun({ compact = false }: { compact?: boolean }) {
       </div>
 
       <div className="px-5 py-7 sm:px-7 sm:py-8">
-        <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-          Your goal
-        </p>
+        <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Your goal</p>
         <div className="mt-3 flex flex-wrap gap-2">
           {GOALS.map((g, i) => (
             <button
@@ -185,9 +176,7 @@ export function AgentRun({ compact = false }: { compact?: boolean }) {
 
         <div
           className={`mt-6 rounded-xl border p-5 transition-all duration-700 ${
-            done
-              ? "border-accent/40 bg-accent/8 opacity-100"
-              : "border-border/60 opacity-35"
+            done ? "border-accent/40 bg-accent/8 opacity-100" : "border-border/60 opacity-35"
           }`}
         >
           <p className="flex items-center gap-2 text-[10px] uppercase tracking-[0.18em] text-accent">
@@ -200,8 +189,8 @@ export function AgentRun({ compact = false }: { compact?: boolean }) {
               : "Working…"}
           </p>
           <p className="mt-3 text-xs text-muted-foreground">
-            Sample reasoning generated from the demo profile above. Nothing is sent
-            without your approval.
+            Sample reasoning generated from the demo profile above. Nothing is sent without your
+            approval.
           </p>
         </div>
       </div>

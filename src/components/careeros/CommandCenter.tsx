@@ -1,71 +1,100 @@
 import { Reveal, SectionHeading } from "./Reveal";
+import { DemoBadge, useCountUp, useInView } from "./demo";
 
 const METRICS = [
-  ["Matches", "128"],
-  ["Applications", "17"],
-  ["Interviews", "5"],
-  ["Skill gaps", "3"],
-];
+  ["Matches", 128],
+  ["Applications", 17],
+  ["Interviews", 5],
+  ["Skill gaps", 3],
+] as const;
 
-const BARS = [42, 58, 51, 70, 64, 82, 78, 94];
+const BARS = [42, 51, 47, 63, 58, 74, 81, 94];
 
-export function CommandCenter() {
+function Metric({ label, value }: { label: string; value: number }) {
+  const { ref, inView } = useInView<HTMLDivElement>(0.4);
+  const n = useCountUp(value, inView, 1400);
   return (
-    <section id="command-center" className="relative py-28 lg:py-36">
-      <div className="pointer-events-none absolute inset-x-0 top-0 hairline" />
-      <div className="mx-auto max-w-7xl px-6 lg:px-10">
-        <SectionHeading
-          eyebrow="Career command center"
-          title="Everything you need. One intelligent place."
-        />
+    <div
+      ref={ref}
+      className="rounded-xl border border-border bg-secondary/45 p-5 transition-colors duration-500 hover:border-accent/30"
+    >
+      <p className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">{label}</p>
+      <p className="tnum mt-2 font-display text-3xl">{n}</p>
+    </div>
+  );
+}
+
+/** Section 07 — The command center surface. */
+export function CommandCenter() {
+  const { ref, inView } = useInView<HTMLDivElement>(0.3);
+  const score = useCountUp(87, inView, 1600);
+
+  return (
+    <section id="command-center" aria-labelledby="command-title" className="section-y relative">
+      <div className="shell">
+        <div className="flex flex-wrap items-end justify-between gap-6">
+          <SectionHeading
+            index="07"
+            eyebrow="Career command center"
+            title={
+              <span id="command-title">
+                One surface.
+                <br />
+                <span className="italic text-muted-foreground">Your whole career.</span>
+              </span>
+            }
+          />
+          <Reveal delay={140}>
+            <DemoBadge label="Sample workspace data" />
+          </Reveal>
+        </div>
 
         <Reveal delay={120}>
-          <div
-            className="mx-auto mt-20 max-w-5xl"
-            style={{ perspective: "1600px" }}
-          >
+          <div className="mt-16 overflow-hidden" style={{ perspective: "1800px" }}>
             <div
-              className="surface p-7 md:p-10"
-              style={{ transform: "rotateX(9deg) rotateZ(-1deg)" }}
+              ref={ref}
+              className="surface relative overflow-hidden p-6 sm:p-9 md:p-11"
+              style={{ transform: "rotateX(7deg)" }}
             >
-              <div className="flex flex-wrap items-end justify-between gap-6">
+              <div
+                className="pointer-events-none absolute -right-32 -top-32 h-80 w-80 rounded-full bg-primary/22 blur-3xl"
+                aria-hidden="true"
+              />
+
+              <div className="relative flex flex-wrap items-end justify-between gap-8">
                 <div>
                   <p className="eyebrow">Career health score</p>
-                  <p className="mt-3 font-display text-6xl tracking-tight">
-                    87<span className="text-2xl text-muted-foreground">/100</span>
+                  <p className="tnum mt-4 font-display text-6xl leading-none tracking-tight sm:text-7xl">
+                    {score}
+                    <span className="text-2xl text-muted-foreground">/100</span>
                   </p>
                 </div>
-                <p className="max-w-xs text-sm text-muted-foreground">
-                  Trajectory is compounding. Two agents are currently active on your
-                  behalf.
+                <p className="max-w-xs text-sm leading-relaxed text-muted-foreground">
+                  Trajectory is compounding. Two agents are currently active on your behalf; one
+                  draft is waiting for you.
                 </p>
               </div>
 
-              <div className="mt-10 grid gap-4 sm:grid-cols-4">
+              <div className="relative mt-11 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 {METRICS.map(([k, v]) => (
-                  <div
-                    key={k}
-                    className="rounded-xl border border-border bg-secondary/45 p-5"
-                  >
-                    <p className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-                      {k}
-                    </p>
-                    <p className="mt-2 font-display text-3xl">{v}</p>
-                  </div>
+                  <Metric key={k} label={k} value={v} />
                 ))}
               </div>
 
-              <div className="mt-10 rounded-2xl border border-border bg-secondary/30 p-6">
-                <div className="flex items-center justify-between">
-                  <p className="text-sm text-muted-foreground">Momentum · 8 weeks</p>
-                  <p className="text-xs text-accent">+34%</p>
+              <div className="relative mt-10 rounded-2xl border border-border bg-secondary/30 p-6">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <p className="text-sm text-muted-foreground">Momentum · last 8 weeks</p>
+                  <p className="tnum text-xs text-accent">+34%</p>
                 </div>
-                <div className="mt-6 flex h-32 items-end gap-3">
+                <div className="mt-7 flex h-32 items-end gap-2 sm:gap-3" aria-hidden="true">
                   {BARS.map((b, i) => (
-                    <div
+                    <span
                       key={i}
-                      className="flex-1 rounded-t-md bg-gradient-to-t from-primary/40 to-accent/70"
-                      style={{ height: `${b}%` }}
+                      className="flex-1 rounded-t-md bg-gradient-to-t from-primary/45 to-accent/75 transition-[height] duration-1000 ease-out"
+                      style={{
+                        height: inView ? `${b}%` : "4%",
+                        transitionDelay: `${i * 70}ms`,
+                      }}
                     />
                   ))}
                 </div>

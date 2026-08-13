@@ -77,18 +77,24 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Image Insight analyzes images to extract information and enable data-driven actions." },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Image Insight analyzes images to extract information and enable data-driven actions." },
+      { title: "CareerOS — Agentic AI Career Companion" },
+      {
+        name: "description",
+        content:
+          "CareerOS builds a living model of your career, discovers the opportunities that fit, and prepares your next move — with you approving every step.",
+      },
+      { property: "og:title", content: "CareerOS — Agentic AI Career Companion" },
+      {
+        property: "og:description",
+        content: "An agentic AI career operating system. Understand, discover, decide, and grow.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:site", content: "@Lovable" },
-      { name: "twitter:title", content: "Lovable App" },
-      { name: "twitter:description", content: "Image Insight analyzes images to extract information and enable data-driven actions." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/7ac080a337568e84a612d99c9e2ed8a9/id-preview-e30b7a14--d84bb22e-8a7f-45eb-9350-6b17c0bae027.lovable.app-1786564766318.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/7ac080a337568e84a612d99c9e2ed8a9/id-preview-e30b7a14--d84bb22e-8a7f-45eb-9350-6b17c0bae027.lovable.app-1786564766318.png" },
+      { name: "twitter:title", content: "CareerOS — Agentic AI Career Companion" },
+      {
+        name: "twitter:description",
+        content: "An agentic AI career operating system. Understand, discover, decide, and grow.",
+      },
     ],
     links: [
       {
@@ -96,6 +102,26 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         href: appCss,
       },
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+      /*
+       * Fonts are self-hosted from /public/fonts (declared in styles.css).
+       * No third-party request: SSR never blocks on an external stylesheet,
+       * and the page renders identically offline. Only the two faces used
+       * above the fold are preloaded.
+       */
+      {
+        rel: "preload",
+        as: "font",
+        type: "font/woff2",
+        href: "/fonts/instrument-serif-400-normal.woff2",
+        crossOrigin: "anonymous",
+      },
+      {
+        rel: "preload",
+        as: "font",
+        type: "font/woff2",
+        href: "/fonts/manrope-400-normal.woff2",
+        crossOrigin: "anonymous",
+      },
     ],
   }),
   shellComponent: RootShell,

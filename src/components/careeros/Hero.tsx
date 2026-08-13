@@ -1,84 +1,104 @@
 import { Link } from "@tanstack/react-router";
 import { ArrowRight, ArrowDown } from "lucide-react";
 import { Constellation } from "./Constellation";
-import { Reveal } from "./Reveal";
+import { Reveal, MaskedLines } from "./Reveal";
 import { DemoBadge } from "./demo";
 
-const FLOW = ["You", "Profile", "AI agents", "Opportunities", "Career action"];
+const FLOW = ["You", "Profile", "Agents", "Opportunities", "Action"];
+
+const STATS = [
+  ["6", "Specialized agents"],
+  ["9", "Loop stages"],
+  ["100%", "Human-approved"],
+] as const;
 
 export function Hero() {
   return (
-    <section id="top" className="relative overflow-hidden pt-32 pb-20 lg:pt-44 lg:pb-32">
+    <section
+      id="top"
+      aria-labelledby="hero-title"
+      className="relative overflow-hidden pb-24 pt-36 lg:pb-36 lg:pt-48"
+    >
+      {/* Local hero bloom, layered over the page-wide atmosphere. */}
       <div className="hero-glow pointer-events-none absolute inset-0" />
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-background" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-48 bg-gradient-to-b from-transparent to-background" />
 
-      <div className="relative mx-auto grid max-w-7xl items-center gap-14 px-5 sm:px-6 lg:grid-cols-[1.05fr_1fr] lg:gap-16 lg:px-10">
+      <div className="shell relative grid items-center gap-16 lg:grid-cols-[1.06fr_1fr] lg:gap-14">
         <div className="min-w-0">
           <Reveal>
-            <span className="inline-flex items-center gap-2 rounded-full border border-border bg-secondary/50 px-4 py-1.5 text-xs tracking-wide text-muted-foreground">
+            <span className="inline-flex items-center gap-2.5 rounded-full border border-border bg-secondary/50 px-4 py-1.5 text-[11px] uppercase tracking-[0.16em] text-muted-foreground backdrop-blur-md">
               <span className="animate-pulse-soft h-1.5 w-1.5 rounded-full bg-accent" />
               Agentic AI career operating system
             </span>
           </Reveal>
 
-          <Reveal delay={90}>
-            <h1 className="mt-8 font-display text-[2.6rem] leading-[1.04] tracking-tight sm:text-6xl lg:text-7xl">
-              Your career.
-              <br />
-              <span className="text-gradient italic">Handled intelligently.</span>
-            </h1>
-          </Reveal>
+          {/*
+           * Publication-cover headline: controlled line breaks, masked entrance.
+           * Sized off the viewport so it stays commanding without overflowing.
+           */}
+          <h1
+            id="hero-title"
+            className="mt-9 font-display text-[clamp(2.9rem,7.4vw,5.4rem)] leading-[0.98]"
+          >
+            <MaskedLines
+              delay={120}
+              stagger={110}
+              lines={[
+                <>Your next</>,
+                <>career move</>,
+                <span className="text-gradient italic" key="l3">
+                  shouldn’t be chance.
+                </span>,
+              ]}
+            />
+          </h1>
 
-          <Reveal delay={180}>
-            <p className="mt-6 max-w-xl text-base leading-relaxed text-muted-foreground md:text-lg">
-              CareerOS builds a living model of your profile, sends six specialized
-              agents to find and evaluate opportunities, then prepares your next move —
-              with you approving every step.
+          <Reveal delay={430}>
+            <p className="mt-8 max-w-lg text-base leading-relaxed text-muted-foreground md:text-lg">
+              CareerOS builds a living model of who you are professionally, sends six specialized
+              agents to find and evaluate what fits, and prepares your next move — with you
+              approving every step.
             </p>
           </Reveal>
 
-          {/* The product mechanism, stated plainly */}
-          <Reveal delay={240}>
-            <ol className="mt-8 flex flex-wrap items-center gap-x-3 gap-y-2.5">
+          {/* The mechanism, stated as a single legible chain. */}
+          <Reveal delay={500}>
+            <ol className="mt-9 flex flex-wrap items-center gap-x-2.5 gap-y-3">
               {FLOW.map((s, i) => (
-                <li key={s} className="flex items-center gap-3">
-                  <span
-                    className="animate-pulse-soft inline-flex items-center gap-2 rounded-full border border-border bg-secondary/45 px-3.5 py-1.5 text-[11px] uppercase tracking-[0.16em] text-muted-foreground"
-                    style={{ animationDelay: `${i * 0.5}s`, animationDuration: "6s" }}
-                  >
+                <li key={s} className="flex items-center gap-2.5">
+                  <span className="rounded-full border border-border bg-secondary/40 px-3.5 py-1.5 text-[10px] uppercase tracking-[0.18em] text-muted-foreground backdrop-blur-sm">
                     {s}
                   </span>
                   {i < FLOW.length - 1 ? (
-                    <span className="hidden h-px w-5 bg-gradient-to-r from-accent/60 to-transparent sm:block" />
+                    <span
+                      className="h-px w-4 bg-gradient-to-r from-accent/55 to-accent/10"
+                      aria-hidden="true"
+                    />
                   ) : null}
                 </li>
               ))}
             </ol>
           </Reveal>
 
-          <Reveal delay={300}>
-            <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">
+          <Reveal delay={560}>
+            <div className="mt-11 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">
               <Link to="/workspace" className="btn-hero group">
                 Enter CareerOS
                 <ArrowRight className="h-4 w-4 transition-transform duration-500 group-hover:translate-x-1" />
               </Link>
-              <a href="#understands" className="btn-ghost group">
+              <a href="#problem" className="btn-ghost group">
                 <ArrowDown className="h-4 w-4 transition-transform duration-500 group-hover:translate-y-0.5" />
                 See how it works
               </a>
             </div>
           </Reveal>
 
-          <Reveal delay={360}>
-            <dl className="mt-12 grid max-w-lg grid-cols-3 gap-5 border-t border-border pt-8">
-              {[
-                ["6", "Specialized agents"],
-                ["9", "Loop stages"],
-                ["100%", "Human-approved actions"],
-              ].map(([v, k]) => (
+          <Reveal delay={640}>
+            <dl className="mt-14 grid max-w-lg grid-cols-3 gap-6 border-t border-border pt-8">
+              {STATS.map(([v, k]) => (
                 <div key={k} className="min-w-0">
-                  <dt className="font-display text-2xl text-ivory sm:text-3xl">{v}</dt>
-                  <dd className="mt-1 text-[10px] uppercase tracking-[0.14em] text-muted-foreground sm:text-xs">
+                  <dt className="font-display tnum text-3xl text-ivory sm:text-4xl">{v}</dt>
+                  <dd className="mt-1.5 text-[10px] uppercase leading-relaxed tracking-[0.14em] text-muted-foreground sm:text-[11px]">
                     {k}
                   </dd>
                 </div>
@@ -87,10 +107,10 @@ export function Hero() {
           </Reveal>
         </div>
 
-        <Reveal delay={200}>
+        <Reveal delay={300}>
           <div className="min-w-0">
             <Constellation />
-            <div className="mt-4 flex justify-center">
+            <div className="mt-6 flex justify-center">
               <DemoBadge label="Sample profile" />
             </div>
           </div>
