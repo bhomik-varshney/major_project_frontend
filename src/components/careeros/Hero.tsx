@@ -25,7 +25,7 @@ export function Hero() {
       <div className="hero-glow pointer-events-none absolute inset-0" />
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-48 bg-gradient-to-b from-transparent to-background" />
 
-      <div className="relative mx-auto grid w-full max-w-[110rem] items-center gap-10 px-5 sm:px-8 lg:grid-cols-[1.2fr_0.8fr] lg:gap-6 lg:px-10">
+      <div className="relative mx-auto grid w-full max-w-[110rem] items-center gap-11 px-8 sm:px-10 lg:grid-cols-[1.2fr_0.8fr] lg:gap-6 lg:px-13">
         <div className="min-w-0">
           {/*
            * Publication-cover headline: two tight lines keep the column
@@ -36,6 +36,7 @@ export function Hero() {
             className="font-display text-[clamp(3rem,6vw,5.25rem)] leading-[0.96]"
           >
             <MaskedLines
+              className="hero-title-lines"
               delay={120}
               stagger={110}
               lines={[

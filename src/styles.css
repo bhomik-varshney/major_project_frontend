@@ -384,6 +384,11 @@
   }
 }
 
+.hero-title-lines .line-mask:last-child {
+  padding-bottom: 0.16em;
+  margin-bottom: -0.16em;
+}
+
 @utility eyebrow {
   font-size: 0.6875rem;
   letter-spacing: 0.28em;
