@@ -19,6 +19,7 @@ import {
 import { useState } from "react";
 import { usePanelLight } from "@/hooks/use-panel-light";
 import { healthQuery } from "@/services/api/queries";
+import { AscendraMark } from "@/components/careeros/AscendraMark";
 
 const navigation = [
   { to: "/dashboard", label: "Overview", icon: LayoutDashboard },
@@ -52,11 +53,9 @@ export function WorkspaceLayout() {
       <aside className={`career-sidebar ${open ? "is-open" : ""}`}>
         <div className="flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3">
-            <span className="grid h-9 w-9 place-items-center rounded-xl border border-accent/35 bg-primary/25">
-              <span className="h-2.5 w-2.5 rotate-45 rounded-[2px] bg-accent" />
-            </span>
+            <AscendraMark size="workspace" />
             <span className="font-display text-2xl">
-              CareerOS<span className="text-accent">.</span>
+              Ascendra<span className="text-accent">.</span>
             </span>
           </Link>
           <button
@@ -158,7 +157,7 @@ export function WorkspaceLayout() {
         </main>
         <footer className="career-workspace-footer">
           <span>Built for the next step.</span>
-          <span>CareerOS · Phase 01</span>
+          <span>Ascendra · Phase 01</span>
         </footer>
       </div>
     </div>

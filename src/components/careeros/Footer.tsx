@@ -1,4 +1,5 @@
 import { Github, Linkedin, Twitter } from "lucide-react";
+import { AscendraMark } from "@/components/careeros/AscendraMark";
 
 const COLUMNS = [
   { title: "Product", links: ["Intelligence", "Agents", "Command Center", "Roadmap"] },
@@ -13,10 +14,8 @@ export function Footer() {
         <div className="grid gap-12 lg:grid-cols-[1.4fr_2fr]">
           <div>
             <div className="flex items-center gap-3">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg border border-accent/35 bg-primary/30">
-                <span className="h-2 w-2 rotate-45 rounded-[2px] bg-accent" />
-              </span>
-              <span className="font-display text-lg tracking-tight">CareerOS</span>
+              <AscendraMark size="footer" />
+              <span className="font-display text-lg tracking-tight">Ascendra</span>
             </div>
             <p className="mt-4 max-w-sm text-sm leading-relaxed text-muted-foreground">
               An agentic AI career operating system. Understand, discover, decide, and grow.
@@ -62,7 +61,7 @@ export function Footer() {
 
         <div className="mt-14 flex flex-wrap items-center justify-between gap-5 border-t border-border pt-8">
           <p className="text-xs text-muted-foreground">
-            © {new Date().getFullYear()} CareerOS. All rights reserved.
+            © {new Date().getFullYear()} Ascendra. All rights reserved.
           </p>
           <div className="flex items-center gap-5">
             {[Twitter, Linkedin, Github].map((Icon, i) => (

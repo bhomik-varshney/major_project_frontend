@@ -7,9 +7,9 @@ import { Footer } from "@/components/careeros/Footer";
 import { AgentRun } from "@/components/careeros/AgentRun";
 import { DemoBadge } from "@/components/careeros/demo";
 
-const TITLE = "Sample Workspace — CareerOS";
+const TITLE = "Sample Workspace — Ascendra";
 const DESCRIPTION =
-  "Step inside a sample CareerOS workspace: your goal, six agents working the career loop, ranked matches, skill gaps, and applications awaiting your approval.";
+  "Step inside a sample Ascendra workspace: your goal, six agents working the career loop, ranked matches, skill gaps, and applications awaiting your approval.";
 
 export const Route = createFileRoute("/workspace")({
   head: () => ({
@@ -64,7 +64,7 @@ function Workspace() {
 
         <div className="relative grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4 sm:flex sm:flex-wrap sm:items-end sm:justify-between">
           <div className="min-w-0">
-            <DemoBadge label="Sample CareerOS workspace" />
+            <DemoBadge label="Sample Ascendra workspace" />
             <h1 className="mt-5 font-display text-4xl leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl">
               Good afternoon, <span className="italic text-muted-foreground">Aarav.</span>
             </h1>

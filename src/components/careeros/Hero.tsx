@@ -61,7 +61,7 @@ export function Hero() {
 
           <Reveal delay={430}>
             <p className="mt-6 max-w-lg text-base leading-relaxed text-muted-foreground md:text-lg">
-              CareerOS builds a living model of who you are professionally, sends six specialized
+              Ascendra builds a living model of who you are professionally, sends six specialized
               agents to find and evaluate what fits, and prepares your next move — with you
               approving every step.
             </p>
@@ -89,7 +89,7 @@ export function Hero() {
           <Reveal delay={560}>
             <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">
               <Link to="/dashboard" className="btn-hero group">
-                Enter CareerOS
+                Enter Ascendra
                 <ArrowRight className="h-4 w-4 transition-transform duration-500 group-hover:translate-x-1" />
               </Link>
               <a href="#problem" className="btn-ghost group">

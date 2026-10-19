@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { PlannedPage } from "@/components/workspace/shared";
 
 export const Route = createFileRoute("/_student/matches")({
-  head: () => ({ meta: [{ title: "Your matches — CareerOS" }] }),
+  head: () => ({ meta: [{ title: "Your matches — Ascendra" }] }),
   component: () => (
     <PlannedPage
       title="Your matches"

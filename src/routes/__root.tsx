@@ -77,20 +77,20 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "CareerOS — Agentic AI Career Companion" },
+      { title: "Ascendra — Career Operating System" },
       {
         name: "description",
         content:
-          "CareerOS builds a living model of your career, discovers the opportunities that fit, and prepares your next move — with you approving every step.",
+          "Ascendra builds a living model of your career, discovers the opportunities that fit, and prepares your next move — with you approving every step.",
       },
-      { property: "og:title", content: "CareerOS — Agentic AI Career Companion" },
+      { property: "og:title", content: "Ascendra — Career Operating System" },
       {
         property: "og:description",
         content: "An agentic AI career operating system. Understand, discover, decide, and grow.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "CareerOS — Agentic AI Career Companion" },
+      { name: "twitter:title", content: "Ascendra — Career Operating System" },
       {
         name: "twitter:description",
         content: "An agentic AI career operating system. Understand, discover, decide, and grow.",
@@ -101,7 +101,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         rel: "stylesheet",
         href: appCss,
       },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+      { rel: "icon", href: "/file.svg", type: "image/svg+xml", sizes: "any" },
       /*
        * Fonts are self-hosted from /public/fonts (declared in styles.css).
        * No third-party request: SSR never blocks on an external stylesheet,

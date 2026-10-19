@@ -181,7 +181,7 @@ export function AgentRun({ compact = false }: { compact?: boolean }) {
         >
           <p className="flex items-center gap-2 text-[10px] uppercase tracking-[0.18em] text-accent">
             <Sparkles className="h-3 w-3" />
-            CareerOS · your strongest next move
+            Ascendra · your strongest next move
           </p>
           <p className="mt-3 font-display text-xl leading-snug tracking-tight sm:text-2xl">
             {done

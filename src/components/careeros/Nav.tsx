@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { ArrowRight, Menu, X } from "lucide-react";
+import { AscendraMark } from "@/components/careeros/AscendraMark";
 
 const LINKS = [
   { label: "Problem", id: "problem" },
@@ -102,10 +103,8 @@ export function Nav() {
           className="group flex shrink-0 items-center gap-3 rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           onClick={() => setOpen(false)}
         >
-          <span className="relative grid h-9 w-9 place-items-center rounded-xl border border-accent/40 bg-primary/30 transition-colors duration-500 group-hover:border-accent/70">
-            <span className="h-2 w-2 rotate-45 rounded-[2px] bg-accent transition-transform duration-500 group-hover:rotate-[135deg]" />
-          </span>
-          <span className="font-display text-xl tracking-tight">CareerOS</span>
+          <AscendraMark />
+          <span className="font-display text-xl tracking-tight">Ascendra</span>
         </Link>
 
         {/*
@@ -146,7 +145,7 @@ export function Nav() {
             to="/dashboard"
             className="btn-hero group hidden !px-5 !py-2.5 !text-sm sm:inline-flex"
           >
-            Enter CareerOS
+            Enter Ascendra
             <ArrowRight className="h-3.5 w-3.5 transition-transform duration-500 group-hover:translate-x-0.5" />
           </Link>
           <button
@@ -184,7 +183,7 @@ export function Nav() {
             onClick={() => setOpen(false)}
             className="btn-hero mt-5 w-full !text-sm sm:hidden"
           >
-            Enter CareerOS
+            Enter Ascendra
             <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         </div>

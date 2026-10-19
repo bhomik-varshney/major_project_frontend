@@ -15,9 +15,9 @@ import { Roadmap } from "@/components/careeros/Roadmap";
 import { FinalCTA } from "@/components/careeros/FinalCTA";
 import { Footer } from "@/components/careeros/Footer";
 
-const TITLE = "CareerOS — Agentic AI Career Companion";
+const TITLE = "Ascendra — Career Operating System";
 const DESCRIPTION =
-  "CareerOS understands your profile, discovers the right opportunities, evaluates fit, and moves you from goals to growth.";
+  "Ascendra understands your profile, discovers the right opportunities, evaluates fit, and moves you from goals to growth.";
 
 export const Route = createFileRoute("/")({
   head: () => ({

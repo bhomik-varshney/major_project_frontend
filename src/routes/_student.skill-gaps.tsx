@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { PlannedPage } from "@/components/workspace/shared";
 
 export const Route = createFileRoute("/_student/skill-gaps")({
-  head: () => ({ meta: [{ title: "Room to grow — CareerOS" }] }),
+  head: () => ({ meta: [{ title: "Room to grow — Ascendra" }] }),
   component: () => (
     <PlannedPage
       title="Room to grow"
