@@ -19,8 +19,10 @@ export function SettingsPage() {
             production login. Use the same browser and hostname to return to your saved data.
           </p>
           <p>
-            Your profile and documents are saved in a local database. No AI provider, job platform,
-            or external application service receives them in this phase.
+            Your profile and documents are saved in a local database. Local document extraction
+            needs no external service. If you choose optional Groq enhancement for a document, its
+            extracted text, including contact details, is sent to Groq. No job platform or external
+            application service receives it.
           </p>
           <p>
             The session lasts up to 30 days. Clearing your cookies or changing browser creates a

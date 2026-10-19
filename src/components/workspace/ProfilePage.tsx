@@ -13,10 +13,15 @@ import { api, ApiError } from "@/services/api/client";
 import { profileQuery, summaryQuery } from "@/services/api/queries";
 import type { Profile, ProfileInput } from "@/services/api/types";
 import { ErrorNotice, LoadingCards, PageHeading, Panel } from "./shared";
+import { Link } from "@tanstack/react-router";
+import { formatDate } from "@/lib/workspace-date";
+import { SkillEditor } from "./SkillEditor";
+import { ResumeDetails } from "./ResumeDetails";
 
 const blank: ProfileInput = {
   name: "",
   email: "",
+  phone: "",
   location: "",
   career_objective: "",
   education: [],
@@ -28,6 +33,7 @@ const blank: ProfileInput = {
   experience_level: "",
   certifications: [],
   achievements: [],
+  links: [],
 };
 function inputFromProfile(profile: Profile | null): ProfileInput {
   return Object.fromEntries(
@@ -68,21 +74,23 @@ function Labels({
 }) {
   const [text, setText] = useState(values.join(", "));
   return (
-    <Field label={label} hint={hint || "Separate entries with commas."}>
-      <input
-        value={text}
-        maxLength={2000}
-        onChange={(event) => {
-          setText(event.target.value);
-          onChange(
-            event.target.value
-              .split(",")
-              .map((item) => item.trim())
-              .filter(Boolean),
-          );
-        }}
-      />
-    </Field>
+    <div className="space-y-3">
+      <Field label={label} hint={hint || "Separate entries with commas."}>
+        <input
+          value={text}
+          maxLength={2000}
+          onChange={(event) => {
+            setText(event.target.value);
+            onChange(
+              event.target.value
+                .split(",")
+                .map((item) => item.trim())
+                .filter(Boolean),
+            );
+          }}
+        />
+      </Field>
+    </div>
   );
 }
 
@@ -196,6 +204,15 @@ function ProfileForm({
                   placeholder="City, country"
                 />
               </Field>
+              <Field label="Phone number">
+                <input
+                  maxLength={60}
+                  autoComplete="tel"
+                  value={draft.phone}
+                  onChange={(event) => set("phone", event.target.value)}
+                  placeholder="Optional"
+                />
+              </Field>
               <Field label="Experience level">
                 <select
                   value={draft.experience_level}
@@ -213,7 +230,7 @@ function ProfileForm({
               <div className="sm:col-span-2">
                 <Field
                   label="Career objective"
-                  hint="Describe what you want to explore. This is a preference, not an eligibility filter."
+                  hint="Profile Summary / Objective: preserve the resume wording, or add your own statement."
                 >
                   <textarea
                     rows={3}
@@ -233,11 +250,10 @@ function ProfileForm({
             </div>
             <div className="grid gap-5 sm:grid-cols-2">
               <div className="sm:col-span-2">
-                <Labels
-                  label="Your skills"
+                <SkillEditor
                   values={draft.skills}
+                  details={profile?.skill_details || []}
                   onChange={(value) => set("skills", value)}
-                  hint="Add skills you can support with your work. Separate entries with commas."
                 />
               </div>
               <Labels
@@ -250,6 +266,14 @@ function ProfileForm({
                 values={draft.preferred_locations}
                 onChange={(value) => set("preferred_locations", value)}
               />
+              <div className="sm:col-span-2">
+                <Labels
+                  label="Portfolio and profile links"
+                  values={draft.links}
+                  onChange={(value) => set("links", value)}
+                  hint="Use complete https:// or http:// links, separated by commas."
+                />
+              </div>
             </div>
             <p className="mt-4 text-[11px] leading-relaxed text-muted-foreground">
               These are soft preferences. Hard eligibility constraints and matching will be added
@@ -333,6 +357,19 @@ function ProfileForm({
                       />
                     </Field>
                   </div>
+                  <ResumeDetails
+                    kind="Education"
+                    index={index}
+                    value={item}
+                    onChange={(field, value) =>
+                      set(
+                        "education",
+                        draft.education.map((entry, i) =>
+                          i === index ? { ...entry, [field]: value } : entry,
+                        ),
+                      )
+                    }
+                  />
                   <button
                     type="button"
                     className="career-remove mt-4"
@@ -420,6 +457,19 @@ function ProfileForm({
                       </Field>
                     </div>
                   </div>
+                  <ResumeDetails
+                    kind="Experience"
+                    index={index}
+                    value={item}
+                    onChange={(field, value) =>
+                      set(
+                        "experience",
+                        draft.experience.map((entry, i) =>
+                          i === index ? { ...entry, [field]: value } : entry,
+                        ),
+                      )
+                    }
+                  />
                   <button
                     type="button"
                     className="career-remove mt-4"
@@ -514,6 +564,19 @@ function ProfileForm({
                       </Field>
                     </div>
                   </div>
+                  <ResumeDetails
+                    kind="Project"
+                    index={index}
+                    value={item}
+                    onChange={(field, value) =>
+                      set(
+                        "projects",
+                        draft.projects.map((entry, i) =>
+                          i === index ? { ...entry, [field]: value } : entry,
+                        ),
+                      )
+                    }
+                  />
                   <button
                     type="button"
                     className="career-remove mt-4"
@@ -578,6 +641,12 @@ function ProfileForm({
       </form>
       <aside className="space-y-5 xl:sticky xl:top-24">
         <Panel className="border-accent/20">
+          {profile?.verified_at && (
+            <p className="mb-4 text-[10px] text-muted-foreground">
+              Last confirmation: {formatDate(profile.verified_at)} ·{" "}
+              {profile.verified_fields.length} sections still match reviewed values
+            </p>
+          )}
           <ShieldCheck className="h-6 w-6 text-accent" />
           <h2 className="mt-5 font-display text-2xl">Facts you stand behind.</h2>
           <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
@@ -633,9 +702,37 @@ function ProfileForm({
             unknown dates and details empty.
           </p>
           <p className="mt-4 text-xs leading-relaxed text-muted-foreground">
-            Your information stays in this local workspace. Nothing is sent to an AI provider.
+            Your profile is saved locally. Document text reaches Groq only when you explicitly
+            choose enhancement for that document.
           </p>
         </Panel>
+        {profile && profile.sources.length > 0 && (
+          <Panel>
+            <p className="eyebrow !text-[9px]">Reviewed sources</p>
+            <ul className="mt-4 space-y-4">
+              {profile.sources.map((source, index) => (
+                <li key={`${source.source_document_ref}-${index}`} className="text-xs">
+                  <p className="break-words">{source.filename}</p>
+                  <p className="mt-2 text-[10px] leading-relaxed text-muted-foreground">
+                    Reviewed for: {source.fields.join(", ").replaceAll("_", " ")}
+                  </p>
+                  {source.source_available ? (
+                    <Link
+                      to="/documents"
+                      className="mt-2 inline-block text-accent underline underline-offset-4"
+                    >
+                      Open document library
+                    </Link>
+                  ) : (
+                    <p className="mt-2 text-[10px] text-muted-foreground">
+                      Source document removed; approved facts retained.
+                    </p>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </Panel>
+        )}
       </aside>
     </div>
   );

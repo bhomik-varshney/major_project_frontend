@@ -1,4 +1,13 @@
-import type { CareerDocument, Health, Profile, ProfileInput, Summary, UploadPolicy } from "./types";
+import type {
+  CareerDocument,
+  ExtractedData,
+  ExtractionStatus,
+  Health,
+  Profile,
+  ProfileInput,
+  Summary,
+  UploadPolicy,
+} from "./types";
 
 const configured = import.meta.env["VITE_API_BASE_URL"] as string | undefined;
 export const apiBaseUrl = (configured?.trim() || "/api/v1").replace(/\/+$/, "");
@@ -104,13 +113,20 @@ export const api = {
       throw error;
     }
   },
-  saveProfile: (profile: ProfileInput, revision?: number) =>
-    revision
+  saveProfile: (profile: ProfileInput, revision?: number) => {
+    // Rich skill input is accepted alongside the legacy string array. Origin and
+    // confirmation metadata in responses are always established by the server.
+    const payload = {
+      ...profile,
+      skills: profile.skills.map((name) => ({ name, source: "manual", verified: false })),
+    };
+    return revision
       ? privateRequest<Profile>(
           "/profile",
-          json("PUT", { ...profile, expected_revision: revision }),
+          json("PUT", { ...payload, expected_revision: revision }),
         )
-      : privateRequest<Profile>("/profile", json("POST", profile)),
+      : privateRequest<Profile>("/profile", json("POST", payload));
+  },
   verifyProfile: (revision: number) =>
     privateRequest<Profile>(
       "/profile/verify",
@@ -125,4 +141,58 @@ export const api = {
   },
   removeDocument: (id: string) =>
     privateRequest<void>(`/documents/${encodeURIComponent(id)}`, { method: "DELETE" }),
+  processDocument: (id: string, useGroq: boolean, restart = false) =>
+    privateRequest<ExtractionStatus>(
+      `/documents/${encodeURIComponent(id)}/process`,
+      json("POST", { use_groq: useGroq, allow_external_processing: useGroq, restart }),
+    ),
+  processingStatus: async (id: string, signal?: AbortSignal) => {
+    try {
+      return await privateRequest<ExtractionStatus>(
+        `/documents/${encodeURIComponent(id)}/status`,
+        {},
+        signal,
+      );
+    } catch (error) {
+      if (error instanceof ApiError && error.code === "extraction_not_found") return null;
+      throw error;
+    }
+  },
+  extractedData: (id: string, signal?: AbortSignal) =>
+    privateRequest<ExtractedData>(
+      `/documents/${encodeURIComponent(id)}/extracted-data`,
+      {},
+      signal,
+    ),
+  updateExtraction: (id: string, data: ExtractedData, values: ProfileInput) =>
+    privateRequest<ExtractedData>(
+      `/documents/${encodeURIComponent(id)}/extracted-data`,
+      json("PUT", { processing_id: data.id, expected_revision: data.revision, values }),
+    ),
+  verifyExtraction: (
+    id: string,
+    data: ExtractedData,
+    fields: (keyof ProfileInput)[],
+    replaceFields: (keyof ProfileInput)[],
+  ) =>
+    privateRequest<Profile>(
+      `/documents/${encodeURIComponent(id)}/verify`,
+      json("POST", {
+        processing_id: data.id,
+        expected_revision: data.revision,
+        expected_profile_revision: data.current_profile_revision,
+        fields,
+        replace_fields: replaceFields,
+        confirmed: true,
+      }),
+    ),
+  correctExtraction: (
+    id: string,
+    data: ExtractionStatus,
+    action: "correction" | "reject" | "cancel",
+  ) =>
+    privateRequest<ExtractionStatus>(
+      `/documents/${encodeURIComponent(id)}/request-correction`,
+      json("POST", { processing_id: data.id, expected_revision: data.revision, action }),
+    ),
 };

@@ -6,6 +6,7 @@ import { documentsQuery, policyQuery, summaryQuery } from "@/services/api/querie
 import type { CareerDocument } from "@/services/api/types";
 import { ErrorNotice, LoadingCards, PageHeading, Panel } from "./shared";
 import { formatDate } from "@/lib/workspace-date";
+import { DocumentReview } from "./DocumentReview";
 
 export function DocumentsPage() {
   const documents = useQuery(documentsQuery);
@@ -16,6 +17,7 @@ export function DocumentsPage() {
   const [notice, setNotice] = useState("");
   const [dragging, setDragging] = useState(false);
   const [deleting, setDeleting] = useState<CareerDocument | null>(null);
+  const [selected, setSelected] = useState<CareerDocument | null>(null);
   const upload = useMutation({
     mutationFn: api.upload,
     onSuccess: (stored) => {
@@ -24,7 +26,12 @@ export function DocumentsPage() {
         ...(current || []).filter((item) => item.id !== stored.id),
       ]);
       void client.invalidateQueries({ queryKey: summaryQuery.queryKey });
-      setNotice("Document saved to your library. Extraction has not started.");
+      setNotice(
+        stored.processing_status === "uploaded"
+          ? "Document saved to your library. Extraction has not started."
+          : "This document is already in your library. Its current processing and review status is shown below.",
+      );
+      setSelected(stored);
     },
   });
   const remove = useMutation({
@@ -36,6 +43,7 @@ export function DocumentsPage() {
       );
       void client.invalidateQueries({ queryKey: summaryQuery.queryKey });
       setDeleting(null);
+      setSelected((current) => (current?.id === id ? null : current));
       setNotice("Document and its stored contents removed.");
     },
   });
@@ -136,8 +144,8 @@ export function DocumentsPage() {
                   </p>
                 </div>
                 <p className="mt-4 text-[11px] leading-relaxed text-muted-foreground">
-                  Stored only. AI extraction is planned for the next phase. A successful upload does
-                  not add or verify facts in your profile.
+                  Upload first, then process and review the proposed fields below. An upload never
+                  adds or verifies profile facts automatically.
                 </p>
               </Panel>
               {validation && <ErrorNotice error={new Error(validation)} />}
@@ -147,6 +155,14 @@ export function DocumentsPage() {
                   <Check className="h-4 w-4" />
                   {notice}
                 </p>
+              )}
+              {selected && (
+                <DocumentReview
+                  key={selected.id}
+                  document={selected}
+                  policy={policy.data}
+                  onClose={() => setSelected(null)}
+                />
               )}
               <Panel>
                 <div className="flex items-center justify-between">
@@ -182,13 +198,37 @@ export function DocumentsPage() {
                           <div className="mt-2.5 flex flex-wrap gap-2">
                             <span className="career-pill !text-[9px]">Stored</span>
                             <span className="career-pill !text-[9px] text-muted-foreground">
-                              Extraction not started
+                              {(
+                                {
+                                  uploaded: "Extraction not started",
+                                  queued: "Queued",
+                                  processing: "Processing",
+                                  awaiting_review: "Awaiting user verification",
+                                  verified: "Verified",
+                                  failed: "Extraction failed",
+                                  rejected: "Rejected",
+                                  needs_correction: "Needs correction",
+                                  cancelled: "Cancelled",
+                                } as Record<string, string>
+                              )[document.processing_status] || "Extraction not started"}
                             </span>
                           </div>
+                          <button
+                            type="button"
+                            className="mt-3 text-[11px] text-accent underline underline-offset-4"
+                            aria-label={`Review ${document.filename}`}
+                            onClick={() => {
+                              setSelected(document);
+                              setNotice("");
+                            }}
+                          >
+                            Open processing & review
+                          </button>
                           {deleting?.id === document.id && (
                             <div className="mt-4 rounded-lg border border-rose-gold/25 p-3">
                               <p className="text-xs leading-relaxed">
-                                Remove this document and its stored contents? This cannot be undone.
+                                Remove this document and its extracted text? Confirmed profile facts
+                                remain. This cannot be undone.
                               </p>
                               <div className="mt-3 flex flex-wrap gap-3">
                                 <button
@@ -238,8 +278,9 @@ export function DocumentsPage() {
                 <ShieldCheck className="h-6 w-6 text-accent" />
                 <h2 className="mt-5 font-display text-2xl">A private starting point.</h2>
                 <p className="mt-4 text-xs leading-relaxed text-muted-foreground">
-                  Your files stay in the local database. They are not shared with an AI provider or
-                  a job platform.
+                  Your files stay in the local database. Processing is local by default. Optional
+                  Groq enhancement sends extracted text only when you choose it for a run. Nothing
+                  is sent to job platforms.
                 </p>
                 <div className="mt-5 border-t border-border pt-5">
                   <p className="text-xs">What happens after upload?</p>
@@ -254,7 +295,7 @@ export function DocumentsPage() {
                     </li>
                     <li className="flex gap-2">
                       <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full border border-muted-foreground" />
-                      Profile extraction is coming next.
+                      Process, correct, and confirm selected profile information.
                     </li>
                   </ol>
                 </div>
@@ -263,7 +304,7 @@ export function DocumentsPage() {
                 <p className="eyebrow !text-[9px]">Good to know</p>
                 <p className="mt-4 text-xs leading-relaxed text-muted-foreground">
                   Password-protected or corrupt files cannot be stored. Scanned PDFs can be stored,
-                  but OCR is not available.
+                  but cannot be extracted because OCR is not available.
                 </p>
                 <p className="mt-4 text-xs leading-relaxed text-muted-foreground">
                   Uploading the same content twice keeps a single copy.

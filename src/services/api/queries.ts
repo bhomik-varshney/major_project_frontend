@@ -19,6 +19,12 @@ export const documentsQuery = queryOptions({
   queryFn: ({ signal }) => api.documents(signal),
   staleTime: 30_000,
   retry: false,
+  refetchInterval: (query) =>
+    query.state.data?.some((document) =>
+      ["queued", "processing"].includes(document.processing_status),
+    )
+      ? 1000
+      : false,
 });
 export const policyQuery = queryOptions({
   queryKey: ["career", "policy"],

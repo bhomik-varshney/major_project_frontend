@@ -185,7 +185,9 @@ export function Dashboard() {
           {
             label: "Profile skills",
             value: data.profile_skill_count,
-            detail: "Added by you",
+            detail: data.extracted_skill_count
+              ? `${data.extracted_skill_count} reviewed from documents`
+              : "Added by you",
             icon: Sparkles,
           },
           {
@@ -236,7 +238,8 @@ export function Dashboard() {
               <ArrowDownToLine className="h-5 w-5 text-accent" />
               <h3 className="mt-5 text-sm">Bring your documents</h3>
               <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-                Upload a resume to your private local library. Extraction comes later.
+                Upload a resume, review its extracted information, and confirm the facts you want to
+                keep.
               </p>
               <span className="mt-5 flex items-center gap-2 text-[11px] text-accent">
                 Open documents
@@ -247,8 +250,8 @@ export function Dashboard() {
           <div className="mt-6 flex items-start gap-3 rounded-xl border border-border bg-secondary/25 p-4">
             <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
             <p className="text-[11px] leading-relaxed text-muted-foreground">
-              This is your real local workspace. Your information stays in the local database; no AI
-              processing or external application actions run in this phase.
+              Your profile changes only after your review. Document processing is local by default;
+              optional Groq enhancement requires your choice. No external applications are sent.
             </p>
           </div>
           <div className="mt-5 grid gap-4 border-t border-border pt-5 sm:grid-cols-2">

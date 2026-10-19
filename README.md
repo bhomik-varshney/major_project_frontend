@@ -25,9 +25,9 @@ This variable includes `/api/v1` and is public build-time configuration, not a s
 | Route | Status |
 | --- | --- |
 | `/` | Existing public landing page and illustrative product previews. |
-| `/dashboard` | Live local database summary: profile completion, saved document/manual-skill counts, recent activity, and onboarding. |
-| `/profile` | Create/update profile facts, education/experience/projects, skills/preferences, save feedback, revision conflict handling, and explicit saved-fact confirmation. |
-| `/documents` | Upload PDF/DOCX/TXT under the server-provided size policy; list saved files, validation/errors, and confirmed removal. Extraction has not started. |
+| `/dashboard` | Live profile completion, document/skill counts, reviewed document-derived skills, verification, activity, and onboarding. |
+| `/profile` | Create/update structured profile facts, individual skill rows with add/edit/remove controls, phone/links, revision conflicts, saved-fact confirmation, source documents, and verification timestamps. |
+| `/documents` | Upload PDF/DOCX/TXT; start local extraction or explicitly consent to optional Groq enhancement; observe processing; review/edit source-linked fields; confirm selected sections, request correction, reject, cancel, retry, or remove. |
 | `/settings` | Explains local identity, storage, cookie expiry, and current privacy/deletion limitations. |
 | `/jobs`, `/matches`, `/skill-gaps`, `/applications` | Explicitly planned; no fabricated rankings, applications, or agent activity. |
 | `/workspace` | Preserved labeled sample demonstration, separate from the real workspace. |
@@ -40,12 +40,23 @@ This variable includes `/api/v1` and is public build-time configuration, not a s
 
 The client establishes an HttpOnly signed local browser session through `POST /api/v1/session`. This is not a production login. The backend derives ownership from the session. Clearing cookies or switching browser creates a different local workspace; it does not erase old database records. Recovery/account authentication is planned. Never put service keys in `VITE_*` variables.
 
-The functional workspace has **no mock mode**: unavailable APIs show errors/retry controls, empty databases show empty states, and unimplemented metrics show a dash/planned label. Only public previews and legacy `/workspace` use sample data. Documents are stored without AI extraction. Saving and confirming profile facts are separate actions; edits require renewed confirmation.
+The functional workspace has **no mock mode**: unavailable APIs show errors/retry controls, empty databases show empty states, and unimplemented metrics show a dash/planned label. Only public previews and legacy `/workspace` use sample data. Saving draft edits and confirming profile facts are separate actions. Extracted suggestions stay outside the profile until confirmation.
+
+## Document review
+
+Upload a readable resume, then choose **Process document**. Processing stays local by default. The optional Groq checkbox explicitly permits sending that document's extracted text, including contact details, to the backend-configured provider for that run. Provider keys never reach this app. Missing keys, timeouts, rate limits, and invalid AI JSON retain real local extraction and show limited-mode warnings.
+
+Review source quotes, heuristic confidence, and missing-field warnings. Expand sections to edit, then save draft edits. Select sections to apply and confirm accuracy before **Confirm and save profile**. Lists add unique entries; replacement requires an explicit choice. Different saved scalar values start unselected. Profile/draft revision conflicts require reload and renewed review. Edited values are labeled candidate corrections rather than claimed document quotes.
+
+Only selected, confirmed sections reach the profile. Dashboard counts derive from stored profile facts and review receipts. Scanned PDFs fail with an OCR explanation and offer retry/manual entry. Full OCR, broad resume intelligence, job retrieval, matching, and agent orchestration remain planned. Local extraction handles basic headings/records and may miss complex layouts; the UI clearly labels its limits. Selection and replacement operate per top-level section, not per individual nested record.
 
 ## UI organization
 
 - `components/workspace/WorkspaceLayout.tsx`: navigation, connection rail, content frame.
 - `Dashboard.tsx`, `ProfilePage.tsx`, `DocumentsPage.tsx`, `SettingsPage.tsx`: functional screens.
+- `SkillEditor.tsx`: individual add/edit/remove controls, Enter-key addition, duplicate/empty validation, origin/confirmation labels, and compatible bulk editing.
+- `ResumeDetails.tsx`: optional structured education/work/project fields without crowding the main profile form.
+- `DocumentReview.tsx`: processing polling, optional external-processing consent, source evidence, draft editing, selection/replacement, explicit confirmation, and recovery states.
 - `shared.tsx`: panels, headings, loading/error/planned states, and dates.
 - `hooks/use-panel-light.ts`: one delegated pointer listener with animation-frame updates; disabled for touch/coarse pointers and reduced motion.
 - `workspace.css`: scoped layout/elevation/forms, existing rose palette, mobile drawer, and motion controls.
@@ -67,6 +78,14 @@ npx playwright install chromium
 npm run test:e2e
 ```
 
-`E2E_BASE_URL` defaults to `http://localhost:5173`. `E2E_CHROMIUM_PATH` can select an installed Chromium executable. Tests use isolated browser sessions and student fixtures, not real personal data. Coverage includes landing entry, profile create/update/confirmation/persistence/conflicts, documents validation/upload/removal, API outage/recovery, loading, mobile layout, pointer lighting, reduced motion/touch, and future-feature labels.
+`E2E_BASE_URL` defaults to `http://localhost:5173`. `E2E_API_BASE_URL` defaults to `http://localhost:8000/api/v1` for direct browser-test API checks; set both when using alternate isolated ports. `E2E_CHROMIUM_PATH` can select an installed Chromium executable. Tests use isolated browser sessions and synthetic student fixtures. The 17 cases cover the original workspace plus actual document processing, source review, edits, confirmation/profile/dashboard integration, correction/rejection, scanned-PDF failure/retry, profile conflicts during review, and mobile review with reduced motion. They choose local extraction and make no provider requests. Additional coverage checks full Objective text, separate projects/technologies, skill-object transport, multiple skill addition/edit/deletion, duplicates/empty input, persistence, save failure recovery, and explicit reprocessing without profile changes.
 
-This repository remains connected to [Lovable](https://lovable.dev/projects/d84bb22e-8a7f-45eb-9350-6b17c0bae027); preserve published Git history and its Vite/TanStack configuration. The earlier [live landing page](https://art-intuition-engine.lovable.app) is a reference. No publication or deployment is included in this local foundation milestone.
+Database initialization, backend configuration, endpoint contracts, changed-file inventory, and limitations are documented in the adjacent backend's `README.md` and `docs/resume-processing-milestone.md`. A backend `.env` can set `GROQ_API_KEY`, `GROQ_MODEL`, `DOCUMENT_STORAGE_PATH`, and `MAX_DOCUMENT_SIZE_MB`; none belongs in this frontend's environment.
+
+This repository remains connected to [Lovable](https://lovable.dev/projects/d84bb22e-8a7f-45eb-9350-6b17c0bae027); preserve published Git history and its Vite/TanStack configuration. The earlier [live landing page](https://art-intuition-engine.lovable.app) is a reference. No publication or deployment is included in this local milestone.
+
+## Parser and evidence improvements
+
+Documents now show a unified **Profile Summary / Objective** with the original section heading/type, complete statement text, grouped project bullets, entry-specific technologies, richer work/education details, and explicit not-detected/ambiguous states. Additional empty record fields are collapsed. Existing API fields remain compatible. Saved older reviews can explicitly **Reprocess with current parser**; the new review never changes the saved profile until confirmation.
+
+The Profile page supports **Add Skill**, an input and Add action, Enter-key addition, individual edit/remove controls, duplicate/empty validation, and a compatible bulk editor. Skills remain a multi-value array. The API accepts skill objects on input and returns the legacy string list plus server-derived `skill_details`; client origin/verification claims cannot confirm a skill. Resume-derived skills retain their source when new manual skills are added. See the backend `docs/parser-quality-milestone.md` and reproducible `docs/extraction-evaluation.md` for the scoped evaluation and remaining limits.

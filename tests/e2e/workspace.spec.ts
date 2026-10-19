@@ -117,9 +117,7 @@ test("documents validate, upload, persist, update summary, and remove", async ({
   await page.reload();
   await expect(page.getByText("resume.txt", { exact: true })).toBeVisible();
   await page.getByRole("link", { name: "Overview", exact: true }).click();
-  await expect(
-    page.getByText("Document stored. Profile extraction is planned for the next phase."),
-  ).toBeVisible();
+  await expect(page.getByText("Document stored. Ready for extraction and review.")).toBeVisible();
   await page.getByRole("link", { name: "Documents", exact: true }).click();
   await page.getByRole("button", { name: "Remove resume.txt" }).click();
   await page.getByRole("button", { name: "Remove permanently" }).click();
