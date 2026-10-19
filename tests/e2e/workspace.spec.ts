@@ -195,7 +195,7 @@ test("panel highlight responds to mouse and respects reduced motion", async ({ p
 });
 
 test("future routes are labeled, sample workspace remains separate", async ({ page }) => {
-  for (const route of ["/jobs", "/matches", "/skill-gaps", "/applications"]) {
+  for (const route of ["/matches", "/skill-gaps", "/applications"]) {
     await page.goto(route);
     await expect(
       page.getByText("This feature is planned for the next implementation phase.", {

@@ -1,3 +1,8 @@
+/* Form controls must stay reachable between the sticky header and save bar. */
+html:has(.career-workspace) {
+  scroll-behavior: auto;
+  scroll-padding-block: 6rem;
+}
 .career-workspace {
   color-scheme: dark;
 }

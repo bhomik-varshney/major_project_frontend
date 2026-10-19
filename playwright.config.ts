@@ -6,6 +6,7 @@ export default defineConfig({
   workers: 1,
   timeout: 30_000,
   use: {
+    browserName: process.env["E2E_BROWSER"] === "webkit" ? "webkit" : "chromium",
     baseURL: process.env["E2E_BASE_URL"] || "http://localhost:5173",
     viewport: { width: 1440, height: 1000 },
     trace: "retain-on-failure",

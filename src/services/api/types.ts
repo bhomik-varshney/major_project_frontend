@@ -125,6 +125,7 @@ export type ExtractionStatus = {
   updated_at: string;
   completed_at: string | null;
   verified_at: string | null;
+  agent_run?: AgentRun | null;
 };
 export type FieldEvidence = {
   source: { block_id: number; page: number | null; paragraph: number | null; quote: string } | null;
@@ -176,4 +177,96 @@ export type Health = {
   database: "connected" | "unavailable";
   version: string;
   access_mode: string;
+};
+
+export type AgentRun = {
+  id: string;
+  agent_name: string;
+  agent_version: string;
+  engine: string;
+  status: string;
+  task: string;
+  tasks: { name: string; status: string; issue_count?: number }[];
+  warnings: string[];
+  error_code: string | null;
+  created_at: string;
+  completed_at: string | null;
+};
+export type JobFilters = {
+  keyword: string;
+  skills: string;
+  location: string;
+  work_mode: "" | "remote" | "hybrid" | "onsite";
+  experience: string;
+  category: string;
+  employment_type: string;
+  company: string;
+  industry: string;
+  country: string;
+  posted_from: string;
+  posted_to: string;
+  availability: "all" | "active" | "expired" | "future";
+};
+export type DemoJob = {
+  id: string;
+  title: string;
+  company: string;
+  industry: string;
+  department: string;
+  location: string;
+  country: string;
+  remote: boolean;
+  work_mode: "remote" | "hybrid" | "onsite";
+  employment_type: "internship" | "full_time" | "contract" | "apprenticeship";
+  description: string;
+  responsibilities: string[];
+  required_skills: string[];
+  preferred_skills: string[];
+  tools_and_technologies: string[];
+  education_requirements: string[];
+  language_requirements: string[];
+  normalized_skill_tokens: string[];
+  experience_level: string;
+  experience_years_min: number;
+  experience_years_max: number;
+  category: string;
+  generated_data: true;
+  salary: { minimum: number; maximum: number; currency: string; period: "month" | "year" } | null;
+  currency: string;
+  source: "seeded_mock";
+  source_url: string;
+  application_url: string;
+  posted_date: string;
+  closing_date: string | null;
+  metadata: {
+    dataset_version: string;
+    country: string;
+    category: string;
+    is_demo: true;
+    company_size: string | null;
+    edge_cases: string[];
+    duplicate_group: string | null;
+  };
+};
+export type JobOptions = {
+  categories: string[];
+  industries: string[];
+  countries: string[];
+  employment_types: string[];
+  experience_levels: string[];
+  work_modes: string[];
+  total: number;
+  dataset_version: string;
+  reference_date: string;
+};
+export type JobPage = {
+  items: DemoJob[];
+  total: number;
+  matched_total: number;
+  page: number;
+  page_size: number;
+  source: "seeded_mock";
+  dataset_version: string;
+  reference_date: string;
+  warnings: string[];
 };

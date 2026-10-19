@@ -1,4 +1,7 @@
 import type {
+  JobFilters,
+  JobOptions,
+  JobPage,
   CareerDocument,
   ExtractedData,
   ExtractionStatus,
@@ -103,6 +106,19 @@ const json = (method: string, body: unknown): RequestInit => ({
 });
 
 export const api = {
+  jobOptions: (signal?: AbortSignal) => privateRequest<JobOptions>("/jobs/options", {}, signal),
+  jobs: (filters: JobFilters, page = 1, signal?: AbortSignal) => {
+    const query = new URLSearchParams({ page: String(page), page_size: "6" });
+    for (const [key, value] of Object.entries(filters)) {
+      if (key !== "skills" && value) query.set(key, value);
+    }
+    for (const skill of filters.skills
+      .split(",")
+      .map((value) => value.trim())
+      .filter(Boolean))
+      query.append("skill", skill);
+    return privateRequest<JobPage>(`/jobs?${query.toString()}`, {}, signal);
+  },
   health: (signal?: AbortSignal) => request<Health>("/health", {}, signal),
   summary: (signal?: AbortSignal) => privateRequest<Summary>("/dashboard/summary", {}, signal),
   profile: async (signal?: AbortSignal) => {

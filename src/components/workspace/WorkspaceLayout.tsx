@@ -24,7 +24,7 @@ const navigation = [
   { to: "/dashboard", label: "Overview", icon: LayoutDashboard },
   { to: "/profile", label: "My profile", icon: UserRound },
   { to: "/documents", label: "Documents", icon: FileText },
-  { to: "/jobs", label: "Opportunities", icon: BriefcaseBusiness, planned: true },
+  { to: "/jobs", label: "Opportunities", icon: BriefcaseBusiness },
   { to: "/matches", label: "My matches", icon: Target, planned: true },
   { to: "/skill-gaps", label: "Skill gaps", icon: Sparkles, planned: true },
   { to: "/applications", label: "Applications", icon: CheckCheck, planned: true },
@@ -91,6 +91,9 @@ export function WorkspaceLayout() {
               >
                 <item.icon className="h-4 w-4 shrink-0" />
                 <span>{item.label}</span>
+                {item.to === "/jobs" && (
+                  <span className="ml-auto text-[9px] text-accent">Demo</span>
+                )}
                 {"planned" in item && (
                   <span className="ml-auto text-[9px] text-muted-foreground/75">Soon</span>
                 )}

@@ -56,6 +56,7 @@ test("resume upload, real processing, evidence review, correction, confirmation,
     "Nisha Example",
   );
   await expect(page.getByLabel("Extracted Skills 1", { exact: true })).toHaveValue("Python");
+  await expect(page.getByLabel("Resume agent run")).toContainText("CrewAI was not run");
   await page.getByText("Source · paragraph 1", { exact: true }).click();
   await expect(page.locator("blockquote").filter({ hasText: "Nisha Example" })).toBeVisible();
   await page.screenshot({ path: "/private/tmp/careeros-extraction-review.png", fullPage: true });
@@ -173,4 +174,22 @@ test("mobile review remains usable with reduced motion and no overflow", async (
   await expect(page.getByLabel("Extracted Full name", { exact: true })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.screenshot({ path: "/private/tmp/careeros-extraction-mobile.png", fullPage: true });
+});
+
+test("CrewAI fallback is visible and retry returns to local processing without profile changes", async ({
+  page,
+}) => {
+  await uploadResume(page);
+  await page.getByRole("checkbox", { name: /Use optional Groq enhancement/ }).check();
+  await processResume(page);
+  await expect(page.getByLabel("Resume agent run")).toContainText("Local fallback");
+  await expect(page.getByLabel("Resume agent run")).toContainText("groq not configured");
+  await expect(page.getByText("CrewAI fallback:", { exact: false })).toBeVisible();
+  await page.getByRole("button", { name: "Reject draft", exact: true }).click();
+  await page.getByRole("button", { name: "Retry extraction", exact: true }).click();
+  await expect(page.getByLabel("Resume agent run")).toContainText("CrewAI was not run");
+  await page.getByRole("link", { name: "My profile", exact: true }).click();
+  await expect(
+    page.getByText("A fresh profile, a fresh perspective.", { exact: true }),
+  ).toBeVisible();
 });

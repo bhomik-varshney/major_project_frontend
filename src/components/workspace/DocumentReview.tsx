@@ -128,6 +128,40 @@ export function DocumentReview({
         <ErrorNotice error={status.error} retry={() => void status.refetch()} />
       ) : (
         <>
+          {state?.agent_run && (
+            <div
+              className="mb-5 rounded-xl border border-border px-4 py-3"
+              aria-label="Resume agent run"
+            >
+              <p className="text-xs font-medium">
+                {state.agent_run.engine === "crewai"
+                  ? "CrewAI · Resume Intelligence Agent"
+                  : state.agent_run.status === "fallback"
+                    ? "Local fallback · CrewAI could not complete"
+                    : "Local document processing"}
+              </p>
+              <p className="mt-2 text-[11px] text-muted-foreground">
+                {state.agent_run.engine === "crewai" && state.agent_run.status === "draft_ready"
+                  ? "CrewAI processed this resume. Draft facts still require your confirmation."
+                  : state.agent_run.status === "local_only"
+                    ? "CrewAI was not run. This draft uses the limited local parser."
+                    : `Run: ${state.agent_run.status.replaceAll("_", " ")} · ${state.agent_run.task.replaceAll("_", " ")}`}
+              </p>
+              {state.agent_run.error_code && (
+                <p className="mt-2 text-[10px] text-accent">
+                  Fallback reason: {state.agent_run.error_code.replaceAll("_", " ")}. Review the
+                  warnings below or retry processing.
+                </p>
+              )}
+              <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[10px] text-muted-foreground">
+                {state.agent_run.tasks.map((task) => (
+                  <li key={task.name}>
+                    {task.name.replaceAll("_", " ")} · {task.status.replaceAll("_", " ")}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
           {!busy &&
             (restartRequested ||
               !state ||
@@ -165,8 +199,8 @@ export function DocumentReview({
                     onChange={(event) => setUseGroq(event.target.checked)}
                   />
                   <span>
-                    Use optional Groq enhancement. I allow this document’s extracted text, including
-                    contact details, to be sent to Groq for this run.
+                    Use optional Groq enhancement with CrewAI. I allow this document’s extracted
+                    text, including contact details, to be sent to Groq for this run.
                     <span className="mt-2 block text-[10px] text-muted-foreground">
                       {policy.groq_configured
                         ? `Configured model: ${policy.groq_model}.`
@@ -222,6 +256,9 @@ export function DocumentReview({
                           queued: "Waiting for the local worker…",
                           extracting_text: "Extracting readable text…",
                           identifying_fields: "Identifying profile information…",
+                          crew_extraction: "CrewAI is extracting source-linked facts…",
+                          crew_validation: "CrewAI is checking the extraction…",
+                          quality_validation: "Checking source evidence and warnings…",
                           enhancing_fields: "Enhancing source-linked fields with Groq…",
                           preparing_review: "Preparing your verification view…",
                         } as Record<string, string>
@@ -803,7 +840,9 @@ function ReviewEditor({
       >
         <summary className="cursor-pointer text-xs text-accent">
           {data.method === "groq_enhanced"
-            ? "Groq-enhanced extraction"
+            ? data.agent_run?.engine === "crewai"
+              ? "CrewAI + Groq extraction"
+              : "Groq-enhanced extraction"
             : "Limited local extraction"}{" "}
           · limitations and warnings
         </summary>
