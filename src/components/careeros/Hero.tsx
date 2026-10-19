@@ -25,27 +25,15 @@ export function Hero() {
       <div className="hero-glow pointer-events-none absolute inset-0" />
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-48 bg-gradient-to-b from-transparent to-background" />
 
-      {/*
-       * Capped at 96rem: wide enough to breathe on large displays, but narrow
-       * enough that the copy and the constellation stay visually paired rather
-       * than drifting to opposite edges of an ultra-wide window.
-       */}
-      <div className="relative mx-auto grid max-w-[96rem] items-center gap-14 px-5 sm:px-8 lg:grid-cols-[1.1fr_0.9fr] lg:gap-14 lg:px-10">
+      <div className="relative mx-auto grid w-full max-w-[110rem] items-center gap-10 px-5 sm:px-8 lg:grid-cols-[1.2fr_0.8fr] lg:gap-6 lg:px-10">
         <div className="min-w-0">
-          <Reveal>
-            <span className="inline-flex items-center gap-2.5 rounded-full border border-border bg-secondary/50 px-4 py-1.5 text-[11px] uppercase tracking-[0.16em] text-muted-foreground backdrop-blur-md">
-              <span className="animate-pulse-soft h-1.5 w-1.5 rounded-full bg-accent" />
-              Agentic AI career operating system
-            </span>
-          </Reveal>
-
           {/*
            * Publication-cover headline: two tight lines keep the column
            * balanced against the constellation instead of running tall.
            */}
           <h1
             id="hero-title"
-            className="mt-7 font-display text-[clamp(2.75rem,5.6vw,4.5rem)] leading-[0.96]"
+            className="font-display text-[clamp(3rem,6vw,5.25rem)] leading-[0.96]"
           >
             <MaskedLines
               delay={120}
@@ -61,23 +49,21 @@ export function Hero() {
 
           <Reveal delay={430}>
             <p className="mt-6 max-w-lg text-base leading-relaxed text-muted-foreground md:text-lg">
-              Ascendra builds a living model of who you are professionally, sends six specialized
-              agents to find and evaluate what fits, and prepares your next move — with you
-              approving every step.
+              Find your fit. Plan your next move. Build a career that keeps rising.
             </p>
           </Reveal>
 
           {/* The mechanism, stated as a single legible chain. */}
-          <Reveal delay={500}>
-            <ol className="mt-7 flex flex-wrap items-center gap-x-2.5 gap-y-3">
+          <Reveal delay={500} variant="x">
+            <ol className="mt-7 flex w-full flex-nowrap items-center justify-start gap-1 sm:gap-2">
               {FLOW.map((s, i) => (
-                <li key={s} className="flex items-center gap-2.5">
-                  <span className="rounded-full border border-border bg-secondary/40 px-3.5 py-1.5 text-[10px] uppercase tracking-[0.18em] text-muted-foreground backdrop-blur-sm">
+                <li key={s} className="flex shrink-0 items-center gap-1 sm:gap-2">
+                  <span className="whitespace-nowrap rounded-full border border-border bg-secondary/60 px-0.5 py-1 text-[clamp(6px,2.5vw,7px)] uppercase tracking-[0.06em] text-muted-foreground sm:px-2 sm:py-1.5 sm:text-[9px] sm:tracking-[0.12em] xl:px-3 xl:text-[10px] xl:tracking-[0.18em]">
                     {s}
                   </span>
                   {i < FLOW.length - 1 ? (
                     <span
-                      className="h-px w-4 bg-gradient-to-r from-accent/55 to-accent/10"
+                      className="h-px w-1 shrink-0 bg-gradient-to-r from-accent/55 to-accent/10 sm:w-3 xl:w-4"
                       aria-hidden="true"
                     />
                   ) : null}
