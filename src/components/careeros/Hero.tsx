@@ -88,7 +88,7 @@ export function Hero() {
 
           <Reveal delay={560}>
             <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">
-              <Link to="/workspace" className="btn-hero group">
+              <Link to="/dashboard" className="btn-hero group">
                 Enter CareerOS
                 <ArrowRight className="h-4 w-4 transition-transform duration-500 group-hover:translate-x-1" />
               </Link>

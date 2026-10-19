@@ -130,7 +130,9 @@ export function Nav() {
                   <span
                     aria-hidden="true"
                     className={`absolute -bottom-1.5 left-0 h-px origin-left bg-gradient-to-r from-accent to-accent/25 transition-all duration-500 ${
-                      on ? "w-full opacity-100" : "w-0 opacity-0 group-hover:w-full group-hover:opacity-70"
+                      on
+                        ? "w-full opacity-100"
+                        : "w-0 opacity-0 group-hover:w-full group-hover:opacity-70"
                     }`}
                   />
                 </a>
@@ -141,7 +143,7 @@ export function Nav() {
 
         <div className="flex shrink-0 items-center gap-2.5">
           <Link
-            to="/workspace"
+            to="/dashboard"
             className="btn-hero group hidden !px-5 !py-2.5 !text-sm sm:inline-flex"
           >
             Enter CareerOS
@@ -178,7 +180,7 @@ export function Nav() {
             ))}
           </ul>
           <Link
-            to="/workspace"
+            to="/dashboard"
             onClick={() => setOpen(false)}
             className="btn-hero mt-5 w-full !text-sm sm:hidden"
           >

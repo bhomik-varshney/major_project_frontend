@@ -89,7 +89,7 @@ export function FinalCTA() {
 
         <Reveal delay={420}>
           <div className="mt-12 flex flex-wrap items-center justify-center gap-4">
-            <Link to="/workspace" className="btn-hero group !px-9 !py-4 !text-base">
+            <Link to="/dashboard" className="btn-hero group !px-9 !py-4 !text-base">
               Enter CareerOS
               <ArrowRight className="h-4 w-4 transition-transform duration-500 group-hover:translate-x-1" />
             </Link>

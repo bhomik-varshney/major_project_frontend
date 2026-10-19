@@ -103,10 +103,7 @@ export function Constellation() {
         <div className="absolute inset-[36%] rounded-full border border-accent/15" />
 
         {/* Connections */}
-        <svg
-          viewBox="0 0 100 100"
-          className="absolute inset-0 h-full w-full overflow-visible"
-        >
+        <svg viewBox="0 0 100 100" className="absolute inset-0 h-full w-full overflow-visible">
           {/* Perimeter arcs first, so spokes read on top. */}
           {NODES.map((n, i) => {
             const m = NODES[(i + 1) % NODES.length]!;
@@ -192,8 +189,7 @@ export function Constellation() {
                   height: n.r * 2,
                   background:
                     "linear-gradient(145deg, oklch(0.8 0.11 5 / 0.9), oklch(0.42 0.13 15 / 0.85))",
-                  boxShadow:
-                    "0 0 26px -4px var(--rose), inset 0 1px 0 oklch(1 0 0 / 0.35)",
+                  boxShadow: "0 0 26px -4px var(--rose), inset 0 1px 0 oklch(1 0 0 / 0.35)",
                 }}
               />
               <span className="whitespace-nowrap text-[9px] uppercase tracking-[0.18em] text-muted-foreground/85">

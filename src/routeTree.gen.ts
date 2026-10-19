@@ -10,11 +10,24 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as StudentRouteImport } from './routes/_student'
 import { Route as WorkspaceRouteImport } from './routes/workspace'
+import { Route as StudentApplicationsRouteImport } from './routes/_student.applications'
+import { Route as StudentDashboardRouteImport } from './routes/_student.dashboard'
+import { Route as StudentDocumentsRouteImport } from './routes/_student.documents'
+import { Route as StudentJobsRouteImport } from './routes/_student.jobs'
+import { Route as StudentMatchesRouteImport } from './routes/_student.matches'
+import { Route as StudentProfileRouteImport } from './routes/_student.profile'
+import { Route as StudentSettingsRouteImport } from './routes/_student.settings'
+import { Route as StudentSkillGapsRouteImport } from './routes/_student.skill-gaps'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StudentRoute = StudentRouteImport.update({
+  id: '/_student',
   getParentRoute: () => rootRouteImport,
 } as any)
 const WorkspaceRoute = WorkspaceRouteImport.update({
@@ -22,30 +35,128 @@ const WorkspaceRoute = WorkspaceRouteImport.update({
   path: '/workspace',
   getParentRoute: () => rootRouteImport,
 } as any)
+const StudentApplicationsRoute = StudentApplicationsRouteImport.update({
+  id: '/applications',
+  path: '/applications',
+  getParentRoute: () => StudentRoute,
+} as any)
+const StudentDashboardRoute = StudentDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => StudentRoute,
+} as any)
+const StudentDocumentsRoute = StudentDocumentsRouteImport.update({
+  id: '/documents',
+  path: '/documents',
+  getParentRoute: () => StudentRoute,
+} as any)
+const StudentJobsRoute = StudentJobsRouteImport.update({
+  id: '/jobs',
+  path: '/jobs',
+  getParentRoute: () => StudentRoute,
+} as any)
+const StudentMatchesRoute = StudentMatchesRouteImport.update({
+  id: '/matches',
+  path: '/matches',
+  getParentRoute: () => StudentRoute,
+} as any)
+const StudentProfileRoute = StudentProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => StudentRoute,
+} as any)
+const StudentSettingsRoute = StudentSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => StudentRoute,
+} as any)
+const StudentSkillGapsRoute = StudentSkillGapsRouteImport.update({
+  id: '/skill-gaps',
+  path: '/skill-gaps',
+  getParentRoute: () => StudentRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/workspace': typeof WorkspaceRoute
+  '/applications': typeof StudentApplicationsRoute
+  '/dashboard': typeof StudentDashboardRoute
+  '/documents': typeof StudentDocumentsRoute
+  '/jobs': typeof StudentJobsRoute
+  '/matches': typeof StudentMatchesRoute
+  '/profile': typeof StudentProfileRoute
+  '/settings': typeof StudentSettingsRoute
+  '/skill-gaps': typeof StudentSkillGapsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/workspace': typeof WorkspaceRoute
+  '/applications': typeof StudentApplicationsRoute
+  '/dashboard': typeof StudentDashboardRoute
+  '/documents': typeof StudentDocumentsRoute
+  '/jobs': typeof StudentJobsRoute
+  '/matches': typeof StudentMatchesRoute
+  '/profile': typeof StudentProfileRoute
+  '/settings': typeof StudentSettingsRoute
+  '/skill-gaps': typeof StudentSkillGapsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_student': typeof StudentRouteWithChildren
   '/workspace': typeof WorkspaceRoute
+  '/_student/applications': typeof StudentApplicationsRoute
+  '/_student/dashboard': typeof StudentDashboardRoute
+  '/_student/documents': typeof StudentDocumentsRoute
+  '/_student/jobs': typeof StudentJobsRoute
+  '/_student/matches': typeof StudentMatchesRoute
+  '/_student/profile': typeof StudentProfileRoute
+  '/_student/settings': typeof StudentSettingsRoute
+  '/_student/skill-gaps': typeof StudentSkillGapsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/workspace'
+  fullPaths:
+    | '/'
+    | '/workspace'
+    | '/applications'
+    | '/dashboard'
+    | '/documents'
+    | '/jobs'
+    | '/matches'
+    | '/profile'
+    | '/settings'
+    | '/skill-gaps'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/workspace'
-  id: '__root__' | '/' | '/workspace'
+  to:
+    | '/'
+    | '/workspace'
+    | '/applications'
+    | '/dashboard'
+    | '/documents'
+    | '/jobs'
+    | '/matches'
+    | '/profile'
+    | '/settings'
+    | '/skill-gaps'
+  id:
+    | '__root__'
+    | '/'
+    | '/_student'
+    | '/workspace'
+    | '/_student/applications'
+    | '/_student/dashboard'
+    | '/_student/documents'
+    | '/_student/jobs'
+    | '/_student/matches'
+    | '/_student/profile'
+    | '/_student/settings'
+    | '/_student/skill-gaps'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  StudentRoute: typeof StudentRouteWithChildren
   WorkspaceRoute: typeof WorkspaceRoute
 }
 
@@ -58,6 +169,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_student': {
+      id: '/_student'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof StudentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/workspace': {
       id: '/workspace'
       path: '/workspace'
@@ -65,11 +183,93 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WorkspaceRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_student/applications': {
+      id: '/_student/applications'
+      path: '/applications'
+      fullPath: '/applications'
+      preLoaderRoute: typeof StudentApplicationsRouteImport
+      parentRoute: typeof StudentRoute
+    }
+    '/_student/dashboard': {
+      id: '/_student/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof StudentDashboardRouteImport
+      parentRoute: typeof StudentRoute
+    }
+    '/_student/documents': {
+      id: '/_student/documents'
+      path: '/documents'
+      fullPath: '/documents'
+      preLoaderRoute: typeof StudentDocumentsRouteImport
+      parentRoute: typeof StudentRoute
+    }
+    '/_student/jobs': {
+      id: '/_student/jobs'
+      path: '/jobs'
+      fullPath: '/jobs'
+      preLoaderRoute: typeof StudentJobsRouteImport
+      parentRoute: typeof StudentRoute
+    }
+    '/_student/matches': {
+      id: '/_student/matches'
+      path: '/matches'
+      fullPath: '/matches'
+      preLoaderRoute: typeof StudentMatchesRouteImport
+      parentRoute: typeof StudentRoute
+    }
+    '/_student/profile': {
+      id: '/_student/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof StudentProfileRouteImport
+      parentRoute: typeof StudentRoute
+    }
+    '/_student/settings': {
+      id: '/_student/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof StudentSettingsRouteImport
+      parentRoute: typeof StudentRoute
+    }
+    '/_student/skill-gaps': {
+      id: '/_student/skill-gaps'
+      path: '/skill-gaps'
+      fullPath: '/skill-gaps'
+      preLoaderRoute: typeof StudentSkillGapsRouteImport
+      parentRoute: typeof StudentRoute
+    }
   }
 }
 
+interface StudentRouteChildren {
+  StudentApplicationsRoute: typeof StudentApplicationsRoute
+  StudentDashboardRoute: typeof StudentDashboardRoute
+  StudentDocumentsRoute: typeof StudentDocumentsRoute
+  StudentJobsRoute: typeof StudentJobsRoute
+  StudentMatchesRoute: typeof StudentMatchesRoute
+  StudentProfileRoute: typeof StudentProfileRoute
+  StudentSettingsRoute: typeof StudentSettingsRoute
+  StudentSkillGapsRoute: typeof StudentSkillGapsRoute
+}
+
+const StudentRouteChildren: StudentRouteChildren = {
+  StudentApplicationsRoute: StudentApplicationsRoute,
+  StudentDashboardRoute: StudentDashboardRoute,
+  StudentDocumentsRoute: StudentDocumentsRoute,
+  StudentJobsRoute: StudentJobsRoute,
+  StudentMatchesRoute: StudentMatchesRoute,
+  StudentProfileRoute: StudentProfileRoute,
+  StudentSettingsRoute: StudentSettingsRoute,
+  StudentSkillGapsRoute: StudentSkillGapsRoute,
+}
+
+const StudentRouteWithChildren =
+  StudentRoute._addFileChildren(StudentRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  StudentRoute: StudentRouteWithChildren,
   WorkspaceRoute: WorkspaceRoute,
 }
 export const routeTree = rootRouteImport
