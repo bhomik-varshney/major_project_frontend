@@ -106,7 +106,7 @@ export function JobsPage() {
       <PageHeading
         eyebrow="Explore the possibilities"
         title="Opportunity discovery."
-        description="Explore careers across a broad demonstration dataset. Search and filter listings; matching comes in a later milestone."
+        description="Explore careers across a broad demonstration dataset. Search and filter listings, or visit Your matches to compare them with your confirmed profile."
       />
       <Panel className="mb-5 border-accent/25">
         <p className="text-sm font-medium text-accent">Seeded demonstration jobs</p>

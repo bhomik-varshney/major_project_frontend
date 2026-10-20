@@ -193,7 +193,10 @@ export function Dashboard() {
           {
             label: "Recommended jobs",
             value: data.recommended_job_count ?? "—",
-            detail: "Discovery is coming next",
+            detail:
+              data.recommended_job_count === null
+                ? "Find matches from your confirmed profile"
+                : "From your latest current matching run",
             icon: Target,
           },
           {
@@ -222,6 +225,13 @@ export function Dashboard() {
             </div>
             <span className="career-pill">Personal foundation</span>
           </div>
+          <Link to="/matches" className="career-action-card group mt-6 block">
+            <Target className="h-5 w-5 text-accent" />
+            <h3 className="mt-3 text-sm">Find matching jobs</h3>
+            <p className="mt-2 text-xs text-muted-foreground">
+              Compare your confirmed profile with seeded opportunities and inspect every score.
+            </p>
+          </Link>
           <div className="mt-6 grid gap-4 md:grid-cols-2">
             <Link to="/profile" className="career-action-card group">
               <UserRound className="h-5 w-5 text-accent" />

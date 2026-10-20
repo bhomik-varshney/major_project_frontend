@@ -13,6 +13,7 @@ import type {
   UploadPolicy,
 } from "@/services/api/types";
 import { ErrorNotice, LoadingCards, Panel } from "./shared";
+import { ResumeAudit } from "./ResumeAudit";
 import { formatDate } from "@/lib/workspace-date";
 
 const labels: Record<keyof ProfileInput, string> = {
@@ -27,6 +28,8 @@ const labels: Record<keyof ProfileInput, string> = {
   projects: "Projects",
   certifications: "Certifications",
   achievements: "Achievements",
+  additional_sections: "Additional sections",
+  publications: "Publications",
   links: "Links",
   preferred_roles: "Preferred roles",
   preferred_locations: "Preferred locations",
@@ -47,6 +50,7 @@ export function DocumentReview({
 }) {
   const client = useQueryClient();
   const [useGroq, setUseGroq] = useState(false);
+  const [useVision, setUseVision] = useState(false);
   const [restartRequested, setRestartRequested] = useState(false);
   const status = useQuery({
     queryKey: statusKey(document.id),
@@ -77,10 +81,12 @@ export function DocumentReview({
     }
   }, [client, processingId, currentStatus]);
   const process = useMutation({
-    mutationFn: (restart: boolean) => api.processDocument(document.id, useGroq, restart),
+    mutationFn: (restart: boolean) =>
+      api.processDocument(document.id, useGroq, restart, useGroq && useVision),
     onSuccess: (result) => {
       setRestartRequested(false);
       setUseGroq(false);
+      setUseVision(false);
       client.setQueryData(statusKey(document.id), result);
       invalidate();
     },
@@ -143,13 +149,15 @@ export function DocumentReview({
               <p className="mt-2 text-[11px] text-muted-foreground">
                 {state.agent_run.engine === "crewai" && state.agent_run.status === "draft_ready"
                   ? "CrewAI processed this resume. Draft facts still require your confirmation."
-                  : state.agent_run.status === "local_only"
-                    ? "CrewAI was not run. This draft uses the limited local parser."
-                    : `Run: ${state.agent_run.status.replaceAll("_", " ")} · ${state.agent_run.task.replaceAll("_", " ")}`}
+                  : state.agent_run.status === "partial"
+                    ? "Completed AI extraction is retained. An AI stage could not finish; local source checks ran. Review all draft facts before confirming."
+                    : state.agent_run.status === "local_only"
+                      ? "No external model was run. Local extraction and the canonical CrewAI Flow produced this draft."
+                      : `Run: ${state.agent_run.status.replaceAll("_", " ")} · ${state.agent_run.task.replaceAll("_", " ")}`}
               </p>
               {state.agent_run.error_code && (
                 <p className="mt-2 text-[10px] text-accent">
-                  Fallback reason: {state.agent_run.error_code.replaceAll("_", " ")}. Review the
+                  Processing issue: {state.agent_run.error_code.replaceAll("_", " ")}. Review the
                   warnings below or retry processing.
                 </p>
               )}
@@ -196,7 +204,10 @@ export function DocumentReview({
                     type="checkbox"
                     className="mt-0.5 accent-[var(--rose)]"
                     checked={useGroq}
-                    onChange={(event) => setUseGroq(event.target.checked)}
+                    onChange={(event) => {
+                      setUseGroq(event.target.checked);
+                      if (!event.target.checked) setUseVision(false);
+                    }}
                   />
                   <span>
                     Use optional Groq enhancement with CrewAI. I allow this document’s extracted
@@ -209,6 +220,30 @@ export function DocumentReview({
                     </span>
                   </span>
                 </label>
+                {useGroq && document.filename.toLowerCase().endsWith(".txt") === false && (
+                  <label className="mt-4 flex items-start gap-3 text-xs leading-relaxed">
+                    <input
+                      type="checkbox"
+                      className="mt-0.5 accent-[var(--rose)]"
+                      checked={useVision}
+                      onChange={(event) => setUseVision(event.target.checked)}
+                    />
+                    <span>
+                      Include visual layout analysis. I also allow rendered resume page images,
+                      including visible personal details, to be sent to Groq for this run.
+                      <span className="mt-2 block text-[10px] text-muted-foreground">
+                        Uses the configured primary/fallback vision model when available. Local
+                        previews and OCR work without this option.
+                        {policy.vision_primary && (
+                          <span className="mt-1 block break-all">
+                            Configured vision: {policy.vision_primary}
+                            {policy.vision_fallback && ` / ${policy.vision_fallback}`}
+                          </span>
+                        )}
+                      </span>
+                    </span>
+                  </label>
+                )}
                 <div className="mt-5 flex flex-wrap items-center gap-4">
                   <button
                     type="button"
@@ -254,11 +289,20 @@ export function DocumentReview({
                     : (
                         {
                           queued: "Waiting for the local worker…",
+                          rendering_pages: "Rendering private page previews…",
+                          ocr_processing: "Reading image-based text with local OCR…",
+                          provider_rate_wait: "Waiting for Groq’s quota to reset…",
+                          vision_processing: "CrewAI is analysing visual layout…",
                           extracting_text: "Extracting readable text…",
                           identifying_fields: "Identifying profile information…",
                           crew_extraction: "CrewAI is extracting source-linked facts…",
                           crew_validation: "CrewAI is checking the extraction…",
                           quality_validation: "Checking source evidence and warnings…",
+                          analysing: "Analysing page quality…",
+                          canonicalizing: "Connecting fields with source evidence…",
+                          validating: "Validating canonical fields and relationships…",
+                          repairing: "Verifying uncertain fields with a bounded repair loop…",
+                          review_preparation: "Preparing the validated review draft…",
                           enhancing_fields: "Enhancing source-linked fields with Groq…",
                           preparing_review: "Preparing your verification view…",
                         } as Record<string, string>
@@ -293,6 +337,7 @@ export function DocumentReview({
               <LoadingCards />
             )}
           {data.isError && <ErrorNotice error={data.error} retry={refresh} />}
+          {state && <ResumeAudit documentId={document.id} state={state} />}
           {data.data && !busy && !restartRequested && state?.status !== "rejected" && (
             <ReviewEditor
               key={`${data.data.id}-${data.data.revision}-${data.data.current_profile_revision}`}
@@ -380,6 +425,15 @@ function SourceHint({ proof, edited }: { proof: FieldEvidence | undefined; edite
         Confidence: {proof.confidence} ·{" "}
         {proof.method === "groq" ? "Groq suggestion" : "Local suggestion"}
       </p>
+      {!!proof.extraction_methods?.length && (
+        <p
+          className={`mt-1 ${proof.extraction_methods.includes("ocr") ? "text-purple-400" : "text-emerald-400"}`}
+        >
+          Evidence: {proof.extraction_methods.join(" + ")}
+          {proof.ocr_confidence != null &&
+            ` · OCR recognition ${Math.round(proof.ocr_confidence * 100)}%`}
+        </p>
+      )}
       {proof.heading && (
         <p className="mt-1">
           Original heading: {proof.heading}
@@ -501,11 +555,11 @@ function ReviewEditor({
     <div className="min-w-0">
       <label className="career-field">
         <span>{fieldLabel(path)}</span>
-        {multiline ? (
+        {multiline || path.endsWith(".content") ? (
           <textarea
             rows={3}
             aria-label={`Extracted ${fieldLabel(path)}`}
-            maxLength={2000}
+            maxLength={path.endsWith(".content") ? 6000 : 2000}
             disabled={readOnly || busy}
             value={value}
             onChange={(event) => onChange(event.target.value)}
@@ -529,7 +583,12 @@ function ReviewEditor({
     const populated = Array.isArray(value) ? value.length > 0 : !!value;
     const current = describe(prior);
     return (
-      <details key={field} open={populated} className="rounded-xl border border-border p-4 sm:p-5">
+      <details
+        id={`resume-field-${field}`}
+        key={field}
+        open={populated}
+        className="rounded-xl border border-border p-4 sm:p-5"
+      >
         <summary className="cursor-pointer text-sm font-medium">
           {labels[field]}
           <span className="ml-3 text-[10px] font-normal text-muted-foreground">
@@ -747,7 +806,9 @@ function ReviewEditor({
                           ? { organization: "", role: "", period: "", description: "" }
                           : field === "projects"
                             ? { name: "", description: "", url: "" }
-                            : "";
+                            : field === "additional_sections"
+                              ? { heading: "", content: "" }
+                              : "";
                     change(field, [...value, item] as ProfileInput[typeof field]);
                   }}
                 >
@@ -867,6 +928,8 @@ function ReviewEditor({
             "links",
             "certifications",
             "achievements",
+            "publications",
+            "additional_sections",
             "preferred_roles",
             "preferred_locations",
             "experience_level",
@@ -874,7 +937,10 @@ function ReviewEditor({
         ).map(section)}
       </div>
       {!readOnly && (
-        <div className="rounded-xl border border-border bg-background/95 p-4">
+        <div
+          id="resume-confirmation"
+          className="rounded-xl border border-border bg-background/95 p-4"
+        >
           <p className="mb-3 text-[10px] text-muted-foreground">
             Target:{" "}
             {data.current_profile_revision

@@ -27,6 +27,10 @@ export type Project = {
   description: string;
   url: string;
   technologies?: string[];
+  tools?: string[];
+  outcomes?: string[];
+  repository?: string;
+  deployment_url?: string;
   role?: string;
   period?: string;
   links?: string[];
@@ -55,6 +59,8 @@ export type ProfileInput = {
   preferred_roles: string[];
   preferred_locations: string[];
   experience_level: "" | "student" | "graduate" | "early_career" | "experienced";
+  additional_sections: { heading: string; content: string }[];
+  publications: string[];
   certifications: string[];
   achievements: string[];
   links: string[];
@@ -99,6 +105,9 @@ export type UploadPolicy = {
   groq_configured: boolean;
   groq_model: string;
   ocr_available: boolean;
+  vision_primary?: string;
+  vision_fallback?: string;
+  audit_available?: boolean;
 };
 export type ExtractionState =
   | "queued"
@@ -132,6 +141,9 @@ export type FieldEvidence = {
   confidence: "high" | "medium" | "low" | "unknown";
   method: "deterministic" | "groq" | "user";
   warning: string | null;
+  extraction_methods?: string[];
+  layout_block_ids?: string[];
+  ocr_confidence?: number | null;
   edited: boolean;
   classification?: "directly_found" | "normalized" | "ambiguous" | "not_found";
   source_section?: string;
@@ -166,6 +178,8 @@ export type Summary = {
   profile_skill_count: number;
   extracted_skill_count: number;
   recommended_job_count: number | null;
+  latest_matching_status: string | null;
+  matching_stale: boolean;
   skill_gap_count: number | null;
   pending_approval_count: number | null;
   application_status_summary: Record<string, number> | null;
@@ -269,4 +283,227 @@ export type JobPage = {
   dataset_version: string;
   reference_date: string;
   warnings: string[];
+};
+
+export type AuditRegion = { x: number; y: number; width: number; height: number };
+export type AuditLayout = {
+  id: string;
+  page: number;
+  section: string;
+  raw_text: string;
+  block_type: string;
+  region: AuditRegion | null;
+  related_block_ids: string[];
+  source_block_ids: number[];
+  reading_order: number;
+  confidence: number;
+  method: "text" | "vision";
+  status: "supported" | "needs_review";
+  warnings: string[];
+};
+export type CanonicalValue = {
+  fact_id: string;
+  profile_path: string | null;
+  value: string | null;
+  proposed_value?: string | null;
+  normalized_value: string | null;
+  original_text: string;
+  page: number | null;
+  evidence_ids: string[];
+  source_block_ids: number[];
+  extraction_methods: string[];
+  confidence: { label: string; score: number | null; basis: string };
+  status: "supported" | "needs_review" | "conflict" | "unsupported";
+  warnings: string[];
+  related_entities: string[];
+};
+export type CanonicalResume = {
+  schema_version: string;
+  run_id: string;
+  entities: {
+    entity_id: string;
+    bucket: string;
+    fields: Record<string, CanonicalValue>;
+    evidence_ids: string[];
+    section_ids: string[];
+    status: string;
+  }[];
+  sections: {
+    section_id: string;
+    bucket: string;
+    heading: string;
+    original_heading: string;
+    source_block_ids: number[];
+    page: number | null;
+    column: string;
+    detection_method: string;
+  }[];
+  relations: {
+    source_id: string;
+    target_id: string;
+    relation: string;
+    evidence_ids: string[];
+    status: string;
+  }[];
+  conflicts: {
+    conflict_id: string;
+    field: string;
+    code: string;
+    alternatives: {
+      value: string;
+      extraction_method: string;
+      source_block_ids: number[];
+      page: number | null;
+    }[];
+    resolution: string;
+    message: string;
+  }[];
+  warnings: string[];
+};
+export type CanonicalValidation = {
+  schema_valid: boolean;
+  checked_fields: number;
+  supported_fields: number;
+  unsupported_fields: number;
+  critical_passed: boolean;
+  issues: { code: string; field: string; severity: string; message: string; repairable: boolean }[];
+  checks: Record<string, number>;
+};
+export type ResumeRunSummary = {
+  id: string;
+  run_version: number;
+  revision: number;
+  status: string;
+  method: string;
+  created_at: string;
+  completed_at: string | null;
+};
+export type RunComparison = {
+  left_version: number;
+  right_version: number;
+  differences: { field: string; before?: string; after?: string; change: string }[];
+  profile_updated: false;
+};
+export type ProcessingAudit = {
+  raw_evidence?: {
+    evidence_id: string;
+    source_block_id: number;
+    source_text: string;
+    page: number | null;
+    paragraph: number | null;
+    order: number;
+    extraction_method: string;
+    confidence: { label: string; score: number | null };
+    coordinates: AuditRegion | null;
+    metadata: Record<string, unknown>;
+  }[];
+  canonical?: CanonicalResume | null;
+  canonical_validation?: CanonicalValidation | null;
+  canonical_workflow?: {
+    engine: string;
+    maximum_repair_cycles: number;
+    tasks: { name: string; label: string; method: string; status: string; elapsed_ms: number }[];
+  };
+  canonical_status?: string | null;
+  repair_iterations?: {
+    iteration: number;
+    detected_problems: CanonicalValidation["issues"];
+    repair_action: string;
+    affected_fields: string[];
+    validation_result: CanonicalValidation;
+    model: string | null;
+    provider: string;
+    elapsed_ms: number;
+    outcome: string;
+    error_code: string | null;
+    changes: { field: string; before: string; after: string }[];
+  }[];
+
+  pipeline_version?: string;
+  id: string;
+  document_id: string;
+  status: string;
+  stage: string;
+  duration_ms: number | null;
+  quality: {
+    classification?: string;
+    page_count?: number | null;
+    selectable_text?: boolean;
+    likely_scanned?: boolean;
+    columns?: string;
+    tables_detected?: boolean;
+    image_heavy_pages?: number[];
+    ocr_recommended?: boolean;
+    vision_recommended?: boolean;
+    limitations?: string[];
+    pages?: {
+      page: number;
+      selectable_characters: number;
+      ocr_recommended: boolean;
+      ocr_status?: string;
+      ocr_reason?: string;
+      ocr_blocks?: number;
+    }[];
+  };
+  pages: {
+    id: string;
+    page: number;
+    width: number;
+    height: number;
+    renderer: string;
+    bytes: number;
+  }[];
+  exact_text: {
+    block_id: number;
+    text: string;
+    page: number | null;
+    paragraph: number | null;
+    order: number;
+    method: string;
+    region: AuditRegion | null;
+    metadata?: { source_engine?: string; source_kind?: string };
+  }[];
+  ocr: {
+    block_id: number;
+    page: number;
+    text: string;
+    region: AuditRegion | null;
+    confidence: number;
+    warnings: string[];
+  }[];
+  layout: AuditLayout[];
+  agents: {
+    name: string;
+    status: string;
+    model?: string | null;
+    method: string;
+    result: Record<string, unknown>;
+    warnings: string[];
+    error_code?: string | null;
+  }[];
+  warnings: {
+    code: string;
+    message: string;
+    field: string;
+    severity: string;
+    sources: Record<string, unknown>[];
+  }[];
+  draft: {
+    values: ProfileInput;
+    unresolved_fields: string[];
+    other_sections: { heading: string; text: string; source_block_ids: number[] }[];
+    evidence: {
+      field: string;
+      value: string;
+      source_text: string;
+      page: number | null;
+      source_block_ids: number[];
+      extraction_methods: string[];
+      confidence: { label: string; score: number | null; basis: string };
+      status: string;
+      alternatives: Record<string, unknown>[];
+    }[];
+  } | null;
+  review: { action: string; revision: number; fields: string[]; decided_at: string | null };
+  consent: { text?: boolean; images?: boolean };
 };

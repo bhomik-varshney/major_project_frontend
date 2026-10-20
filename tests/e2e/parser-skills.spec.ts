@@ -19,7 +19,10 @@ test("Objective, separate projects, technology evidence, multi-skill editing and
   page,
 }) => {
   await page.goto("/");
-  await page.getByRole("link", { name: "Enter CareerOS" }).first().click();
+  await page.getByRole("link", { name: "Enter Ascendra" }).first().click();
+  await expect(page.getByRole("button", { name: "Check backend connection" })).toContainText(
+    "Connected",
+  );
   await page.getByRole("link", { name: "Documents", exact: true }).click();
   await page.getByLabel("Upload document", { exact: true }).setInputFiles({
     name: "objective-projects.txt",

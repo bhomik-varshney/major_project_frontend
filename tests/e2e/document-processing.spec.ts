@@ -38,7 +38,7 @@ test("resume upload, real processing, evidence review, correction, confirmation,
   page,
 }) => {
   await page.goto("/");
-  await page.getByRole("link", { name: "Enter CareerOS" }).first().click();
+  await page.getByRole("link", { name: "Enter Ascendra" }).first().click();
   await expect(page.getByRole("heading", { name: "Your next chapter starts here." })).toBeVisible();
   await uploadResume(page);
   let release!: () => void;
@@ -56,7 +56,7 @@ test("resume upload, real processing, evidence review, correction, confirmation,
     "Nisha Example",
   );
   await expect(page.getByLabel("Extracted Skills 1", { exact: true })).toHaveValue("Python");
-  await expect(page.getByLabel("Resume agent run")).toContainText("CrewAI was not run");
+  await expect(page.getByLabel("Resume agent run")).toContainText("No external model was run");
   await page.getByText("Source · paragraph 1", { exact: true }).click();
   await expect(page.locator("blockquote").filter({ hasText: "Nisha Example" })).toBeVisible();
   await page.screenshot({ path: "/private/tmp/careeros-extraction-review.png", fullPage: true });
@@ -108,10 +108,14 @@ test("scanned PDF failure offers safe retry and manual entry", async ({ page }) 
     .getByLabel("Upload document", { exact: true })
     .setInputFiles(path.resolve("tests/fixtures/scanned.pdf"));
   await page.getByRole("button", { name: "Process document", exact: true }).click();
-  await expect(page.getByRole("alert")).toContainText("Scanned PDFs need OCR");
+  await expect(page.getByRole("alert")).toContainText(
+    "No readable text was recovered, including OCR",
+  );
   await page.getByRole("button", { name: "Retry extraction", exact: true }).click();
   await expect(page.getByText("Extraction 2", { exact: false })).toBeVisible();
-  await expect(page.getByRole("alert")).toContainText("Scanned PDFs need OCR");
+  await expect(page.getByRole("alert")).toContainText(
+    "No readable text was recovered, including OCR",
+  );
   await page.getByRole("link", { name: "Enter profile manually" }).click();
   await expect(page.getByLabel("Full name", { exact: true })).toBeVisible();
 });
@@ -184,10 +188,10 @@ test("CrewAI fallback is visible and retry returns to local processing without p
   await processResume(page);
   await expect(page.getByLabel("Resume agent run")).toContainText("Local fallback");
   await expect(page.getByLabel("Resume agent run")).toContainText("groq not configured");
-  await expect(page.getByText("CrewAI fallback:", { exact: false })).toBeVisible();
+  await expect(page.getByRole("listitem").filter({ hasText: "CrewAI fallback:" })).toBeVisible();
   await page.getByRole("button", { name: "Reject draft", exact: true }).click();
   await page.getByRole("button", { name: "Retry extraction", exact: true }).click();
-  await expect(page.getByLabel("Resume agent run")).toContainText("CrewAI was not run");
+  await expect(page.getByLabel("Resume agent run")).toContainText("No external model was run");
   await page.getByRole("link", { name: "My profile", exact: true }).click();
   await expect(
     page.getByText("A fresh profile, a fresh perspective.", { exact: true }),

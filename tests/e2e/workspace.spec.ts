@@ -44,8 +44,8 @@ test("public landing opens the real empty dashboard", async ({ page }) => {
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
   await page.goto("/");
-  await expect(page).toHaveTitle(/CareerOS/);
-  await page.getByRole("link", { name: "Enter CareerOS" }).first().click();
+  await expect(page).toHaveTitle(/Ascendra/);
+  await page.getByRole("link", { name: "Enter Ascendra" }).first().click();
   await expect(page).toHaveURL(/\/dashboard$/);
   await expect(page.getByRole("heading", { name: "Your next chapter starts here." })).toBeVisible();
   await expect(page.getByText("A fresh start.")).toBeVisible();
@@ -195,8 +195,11 @@ test("panel highlight responds to mouse and respects reduced motion", async ({ p
 });
 
 test("future routes are labeled, sample workspace remains separate", async ({ page }) => {
-  for (const route of ["/matches", "/skill-gaps", "/applications"]) {
+  for (const route of ["/skill-gaps", "/applications"]) {
     await page.goto(route);
+    await expect(page.getByRole("button", { name: "Check backend connection" })).toContainText(
+      "Connected",
+    );
     await expect(
       page.getByText("This feature is planned for the next implementation phase.", {
         exact: false,

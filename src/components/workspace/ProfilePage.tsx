@@ -31,6 +31,8 @@ const blank: ProfileInput = {
   preferred_roles: [],
   preferred_locations: [],
   experience_level: "",
+  additional_sections: [],
+  publications: [],
   certifications: [],
   achievements: [],
   links: [],
@@ -39,7 +41,9 @@ function inputFromProfile(profile: Profile | null): ProfileInput {
   return Object.fromEntries(
     Object.keys(blank).map((key) => [
       key,
-      profile ? profile[key as keyof ProfileInput] : blank[key as keyof ProfileInput],
+      profile
+        ? (profile[key as keyof ProfileInput] ?? blank[key as keyof ProfileInput])
+        : blank[key as keyof ProfileInput],
     ]),
   ) as ProfileInput;
 }
@@ -599,12 +603,81 @@ function ProfileForm({
                 onChange={(value) => set("certifications", value)}
               />
               <Labels
+                label="Publications"
+                values={draft.publications}
+                onChange={(value) => set("publications", value)}
+              />
+              <Labels
                 label="Achievements"
                 values={draft.achievements}
                 onChange={(value) => set("achievements", value)}
               />
             </div>
           </Panel>
+          <div className="career-panel space-y-4">
+            <h2 className="font-display text-2xl">Additional resume sections</h2>
+            <p className="text-xs text-muted-foreground">
+              Research, leadership, volunteering, languages and other original sections.
+            </p>
+            {draft.additional_sections.map((section, index) => (
+              <div key={index} className="space-y-3 rounded-lg border border-border p-4">
+                <Field label={`Additional section ${index + 1} heading`}>
+                  <input
+                    value={section.heading}
+                    maxLength={160}
+                    onChange={(e) =>
+                      set(
+                        "additional_sections",
+                        draft.additional_sections.map((s, i) =>
+                          i === index ? { ...s, heading: e.target.value } : s,
+                        ),
+                      )
+                    }
+                  />
+                </Field>
+                <Field label={`Additional section ${index + 1} content`}>
+                  <textarea
+                    value={section.content}
+                    maxLength={6000}
+                    rows={4}
+                    onChange={(e) =>
+                      set(
+                        "additional_sections",
+                        draft.additional_sections.map((s, i) =>
+                          i === index ? { ...s, content: e.target.value } : s,
+                        ),
+                      )
+                    }
+                  />
+                </Field>
+                <button
+                  type="button"
+                  className="text-xs text-accent"
+                  onClick={() =>
+                    set(
+                      "additional_sections",
+                      draft.additional_sections.filter((_, i) => i !== index),
+                    )
+                  }
+                >
+                  Remove additional section
+                </button>
+              </div>
+            ))}
+            <button
+              type="button"
+              className="career-add"
+              disabled={draft.additional_sections.length >= 30}
+              onClick={() =>
+                set("additional_sections", [
+                  ...draft.additional_sections,
+                  { heading: "", content: "" },
+                ])
+              }
+            >
+              Add additional section
+            </button>
+          </div>
         </fieldset>
         {save.isError && (
           <div className="space-y-3">

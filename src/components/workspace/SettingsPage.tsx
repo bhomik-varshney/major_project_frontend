@@ -21,8 +21,9 @@ export function SettingsPage() {
           <p>
             Your profile and documents are saved in a local database. Local document extraction
             needs no external service. If you choose optional Groq enhancement for a document, its
-            extracted text, including contact details, is sent to Groq. No job platform or external
-            application service receives it.
+            extracted text, including contact details, is sent to Groq. An additional per-run choice
+            permits rendered page images for visual layout analysis. Local OCR does not send images
+            externally. No job platform or external application service receives it.
           </p>
           <p>
             The session lasts up to 30 days. Clearing your cookies or changing browser creates a

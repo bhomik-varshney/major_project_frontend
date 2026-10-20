@@ -279,8 +279,9 @@ export function DocumentsPage() {
                 <h2 className="mt-5 font-display text-2xl">A private starting point.</h2>
                 <p className="mt-4 text-xs leading-relaxed text-muted-foreground">
                   Your files stay in the local database. Processing is local by default. The
-                  optional CrewAI workflow uses Groq and sends extracted text only when you choose
-                  it for a run. Nothing is sent to job platforms.
+                  optional CrewAI workflow uses Groq and sends extracted text and optionally
+                  rendered page images only when you choose it for a run. Nothing is sent to job
+                  platforms.
                 </p>
                 <div className="mt-5 border-t border-border pt-5">
                   <p className="text-xs">What happens after upload?</p>
@@ -303,8 +304,9 @@ export function DocumentsPage() {
               <Panel>
                 <p className="eyebrow !text-[9px]">Good to know</p>
                 <p className="mt-4 text-xs leading-relaxed text-muted-foreground">
-                  Password-protected or corrupt files cannot be stored. Scanned PDFs can be stored,
-                  but cannot be extracted because OCR is not available.
+                  Password-protected or corrupt files cannot be stored. Scanned PDFs use local OCR
+                  when available. Check the separate OCR output and page previews before confirming
+                  extracted values.
                 </p>
                 <p className="mt-4 text-xs leading-relaxed text-muted-foreground">
                   Uploading the same content twice keeps a single copy.

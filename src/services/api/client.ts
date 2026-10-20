@@ -1,4 +1,16 @@
 import type {
+  MatchReadiness,
+  MatchingRun,
+  MatchingPage,
+  MatchAudit,
+  MatchDetail,
+  ResultFilters,
+  MatchingStart,
+} from "./matching-types";
+import type {
+  ProcessingAudit,
+  ResumeRunSummary,
+  RunComparison,
   JobFilters,
   JobOptions,
   JobPage,
@@ -32,6 +44,7 @@ async function request<T>(
   path: string,
   init: RequestInit = {},
   callerSignal?: AbortSignal,
+  binary = false,
 ): Promise<T> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 15_000);
@@ -64,7 +77,7 @@ async function request<T>(
       );
     }
     if (response.status === 204) return undefined as T;
-    return (await response.json()) as T;
+    return (binary ? await response.blob() : await response.json()) as T;
   } catch (error) {
     if (error instanceof ApiError) throw error;
     if (callerSignal?.aborted) throw error;
@@ -95,9 +108,10 @@ async function privateRequest<T>(
   path: string,
   init: RequestInit = {},
   signal?: AbortSignal,
+  binary = false,
 ): Promise<T> {
   await ensureSession();
-  return request<T>(path, init, signal);
+  return request<T>(path, init, signal, binary);
 }
 const json = (method: string, body: unknown): RequestInit => ({
   method,
@@ -106,6 +120,55 @@ const json = (method: string, body: unknown): RequestInit => ({
 });
 
 export const api = {
+  matchingReadiness: (signal?: AbortSignal) =>
+    privateRequest<MatchReadiness>("/matching/readiness", {}, signal),
+  matchingRuns: (signal?: AbortSignal) =>
+    privateRequest<MatchingRun[]>("/matching/runs", {}, signal),
+  matchingRun: (id: string, signal?: AbortSignal) =>
+    privateRequest<MatchingRun>(`/matching/runs/${encodeURIComponent(id)}`, {}, signal),
+  startMatching: (payload: MatchingStart) =>
+    privateRequest<MatchingRun>("/matching/runs", json("POST", payload)),
+  retryMatching: (id: string) =>
+    privateRequest<MatchingRun>(`/matching/runs/${encodeURIComponent(id)}/retry`, {
+      method: "POST",
+    }),
+  cancelMatching: (id: string) =>
+    privateRequest<MatchingRun>(`/matching/runs/${encodeURIComponent(id)}/cancel`, {
+      method: "POST",
+    }),
+  matchingResults: (id: string, filters: ResultFilters, page: number, signal?: AbortSignal) => {
+    const query = new URLSearchParams({ page: String(page), page_size: "6" });
+    for (const [key, value] of Object.entries(filters))
+      if (key !== "skill" && value !== "") query.set(key, String(value));
+    for (const skill of filters.skill
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean))
+      query.append("skill", skill);
+    return privateRequest<MatchingPage>(
+      `/matching/runs/${encodeURIComponent(id)}/results?${query}`,
+      {},
+      signal,
+    );
+  },
+  matchingAudit: (id: string, signal?: AbortSignal) =>
+    privateRequest<MatchAudit>(`/matching/runs/${encodeURIComponent(id)}/audit`, {}, signal),
+  matchingDetail: (id: string, job: string, signal?: AbortSignal) =>
+    privateRequest<MatchDetail>(
+      `/matching/runs/${encodeURIComponent(id)}/results/${encodeURIComponent(job)}`,
+      {},
+      signal,
+    ),
+  bookmarks: (signal?: AbortSignal) =>
+    privateRequest<{ job: import("./types").DemoJob; saved_at: string }[]>(
+      "/matching/bookmarks",
+      {},
+      signal,
+    ),
+  bookmark: (id: string, saved: boolean) =>
+    privateRequest(`/matching/bookmarks/${encodeURIComponent(id)}`, {
+      method: saved ? "PUT" : "DELETE",
+    }),
   jobOptions: (signal?: AbortSignal) => privateRequest<JobOptions>("/jobs/options", {}, signal),
   jobs: (filters: JobFilters, page = 1, signal?: AbortSignal) => {
     const query = new URLSearchParams({ page: String(page), page_size: "6" });
@@ -157,10 +220,39 @@ export const api = {
   },
   removeDocument: (id: string) =>
     privateRequest<void>(`/documents/${encodeURIComponent(id)}`, { method: "DELETE" }),
-  processDocument: (id: string, useGroq: boolean, restart = false) =>
+  resumeRuns: (id: string, signal?: AbortSignal) =>
+    privateRequest<ResumeRunSummary[]>(`/documents/${encodeURIComponent(id)}/runs`, {}, signal),
+  compareResumeRuns: (id: string, left: string, right: string, signal?: AbortSignal) =>
+    privateRequest<RunComparison>(
+      `/documents/${encodeURIComponent(id)}/compare?${new URLSearchParams({ left_run_id: left, right_run_id: right })}`,
+      {},
+      signal,
+    ),
+  originalDocument: (id: string) =>
+    privateRequest<Blob>(`/documents/${encodeURIComponent(id)}/original`, {}, undefined, true),
+  audit: (id: string, signal?: AbortSignal, runId?: string) =>
+    privateRequest<ProcessingAudit>(
+      `/documents/${encodeURIComponent(id)}/audit${runId ? `?${new URLSearchParams({ run_id: runId })}` : ""}`,
+      {},
+      signal,
+    ),
+  pagePreview: (id: string, artifact: string, signal?: AbortSignal) =>
+    privateRequest<Blob>(
+      `/documents/${encodeURIComponent(id)}/audit/pages/${encodeURIComponent(artifact)}`,
+      {},
+      signal,
+      true,
+    ),
+  processDocument: (id: string, useGroq: boolean, restart = false, useVision = false) =>
     privateRequest<ExtractionStatus>(
       `/documents/${encodeURIComponent(id)}/process`,
-      json("POST", { use_groq: useGroq, allow_external_processing: useGroq, restart }),
+      json("POST", {
+        use_groq: useGroq,
+        allow_external_processing: useGroq,
+        restart,
+        use_vision: useVision,
+        allow_image_processing: useVision,
+      }),
     ),
   processingStatus: async (id: string, signal?: AbortSignal) => {
     try {

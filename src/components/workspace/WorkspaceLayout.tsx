@@ -26,7 +26,7 @@ const navigation = [
   { to: "/profile", label: "My profile", icon: UserRound },
   { to: "/documents", label: "Documents", icon: FileText },
   { to: "/jobs", label: "Opportunities", icon: BriefcaseBusiness },
-  { to: "/matches", label: "My matches", icon: Target, planned: true },
+  { to: "/matches", label: "My matches", icon: Target },
   { to: "/skill-gaps", label: "Skill gaps", icon: Sparkles, planned: true },
   { to: "/applications", label: "Applications", icon: CheckCheck, planned: true },
   { to: "/settings", label: "Workspace settings", icon: Settings2 },
