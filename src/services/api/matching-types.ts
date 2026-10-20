@@ -1,9 +1,11 @@
-import type { DemoJob } from "./types";
+import type { DemoJob, FilterAudit } from "./types";
 export type MatchStatus =
   | "queued"
   | "preparing"
   | "normalizing"
   | "calculating_baseline"
+  | "retrieving"
+  | "calibrating"
   | "calculating_hybrid"
   | "generating_explanations"
   | "validating"
@@ -68,6 +70,7 @@ export type SkillMapping = {
   source_path: string;
   candidate_evidence?: { original: string; normalized: string; source_path: string }[];
   reason?: string;
+  match_type?: "exact" | "synonym";
 };
 export type MatchComponent = {
   score: number | null;
@@ -83,6 +86,17 @@ export type RankedMatch = {
   rank: number;
   baseline_score: number;
   hybrid_score: number;
+  match_percentage?: number | null;
+  calibration?: {
+    status: string;
+    version?: string;
+    interpretation?: string;
+    bin_examples?: number;
+    raw_range?: number[];
+  };
+  retrieval?: { method_ranks?: Record<string, number>; fusion_score?: number };
+  method_scores?: Record<string, number | null>;
+  filter_evidence?: Record<string, { accepted: boolean; relation: string; reason: string }>;
   components: Record<string, MatchComponent>;
   calculation: {
     weighted_sum: number;
@@ -103,6 +117,18 @@ export type RankedMatch = {
   warnings: string[];
 };
 export type MatchingPage = {
+  diagnostics?: {
+    empty_state: string;
+    total_jobs: number;
+    after_hard_filters: number;
+    after_retrieval: number;
+    after_score_filter: number;
+    after_result_filters: number;
+    displayed_items: number;
+    saved_minimum_score: number;
+    effective_minimum_score: number;
+    score_scale: string;
+  };
   run: MatchingRun;
   items: RankedMatch[];
   total: number;
@@ -110,6 +136,8 @@ export type MatchingPage = {
   page_size: number;
 };
 export type MatchAudit = {
+  filter_audit?: FilterAudit;
+  retrieval?: Record<string, unknown>;
   run: MatchingRun;
   candidate_snapshot: {
     confirmed_facts: Record<string, unknown>;
@@ -136,6 +164,7 @@ export type ResultFilters = {
 export type MatchingStart = {
   filters: Record<string, unknown>;
   minimum_score: number;
+  retrieval_pool_size?: number;
   use_ai: boolean;
   allow_external_processing: boolean;
 };

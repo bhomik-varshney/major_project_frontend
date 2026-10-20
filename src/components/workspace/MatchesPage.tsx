@@ -10,6 +10,8 @@ import {
   type MatchingRun,
   type SkillMapping,
 } from "@/services/api/matching-types";
+import { JobFilterAudit } from "./JobFilterAudit";
+import type { FilterAudit } from "@/services/api/types";
 import { Panel, PageHeading, ErrorNotice, LoadingCards } from "./shared";
 
 const runTime = (value: string) => {
@@ -26,6 +28,9 @@ const input =
   "mt-2 w-full min-w-0 rounded-lg border border-border bg-background px-3 py-2.5 text-sm";
 const human = (s: string) => s.replaceAll("_", " ");
 const initialSearch = {
+  role: "",
+  location_scope: "compatible",
+  category_scope: "family",
   keyword: "",
   skills: "",
   category: "",
@@ -53,11 +58,26 @@ const stages = [
   "preparing",
   "normalizing",
   "calculating_baseline",
+  "retrieving",
   "calculating_hybrid",
+  "calibrating",
   "generating_explanations",
   "validating",
 ];
 
+const emptyExplanation: Record<string, string> = {
+  no_jobs_in_dataset: "No matching jobs are available because this dataset is empty.",
+  jobs_filtered_out:
+    "Jobs exist, but the location, role/category, work-mode or date filters exclude them. Lowering the score cannot restore jobs removed before ranking. Open Search and filter diagnostics to find the first empty stage.",
+  score_below_threshold:
+    "Jobs were retrieved and scored, but none meet the current raw-score threshold. Lower the result threshold to inspect saved lower-scoring jobs.",
+  result_filters_excluded:
+    "Saved ranked jobs exist, but the current result search or saved-only filter hides them. Clear result filters to see them.",
+  no_retrieval_candidates:
+    "Jobs passed the hard filters but none reached ranking. Inspect retrieval diagnostics or rerun with a broader candidate pool.",
+  page_out_of_range:
+    "Jobs exist on an earlier result page. Return to the first page or clear result filters.",
+};
 function SourceData({ value }: { value: unknown }) {
   return (
     <pre className="mt-3 max-h-80 overflow-auto whitespace-pre-wrap break-words rounded-lg bg-secondary/30 p-4 text-[11px] leading-relaxed">
@@ -121,7 +141,7 @@ function MatchCard({
   const job = row.job;
   return (
     <article className="career-panel min-w-0" aria-label={`Rank ${row.rank}: ${job.title}`}>
-      <div className="flex flex-wrap items-start justify-between gap-4">
+      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4 sm:flex sm:flex-wrap sm:justify-between">
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap gap-2">
             <span className="career-pill">#{row.rank}</span>
@@ -137,13 +157,19 @@ function MatchCard({
             {job.location} · {job.work_mode}
           </p>
         </div>
-        <div className="text-right">
+        <div className="col-span-2 text-left sm:text-right">
           <p className="font-display text-3xl text-accent">
-            {row.hybrid_score.toFixed(1)}
-            <span className="ml-1 text-xs text-muted-foreground">/100</span>
+            {(row.match_percentage ?? row.hybrid_score).toFixed(1)}
+            <span className="ml-1 text-xs text-muted-foreground">
+              {row.match_percentage == null ? "/100" : "%"}
+            </span>
           </p>
-          <p className="mt-1 text-[10px] text-muted-foreground">Hybrid match</p>
-          <p className="mt-2 text-xs">Baseline {row.baseline_score.toFixed(1)}</p>
+          <p className="mt-1 text-[10px] text-muted-foreground">
+            {row.match_percentage == null ? "Hybrid match" : "Experimental match estimate"}
+          </p>
+          <p className="mt-2 text-xs">
+            Raw hybrid {row.hybrid_score.toFixed(1)} · Baseline {row.baseline_score.toFixed(1)}
+          </p>
         </div>
         <button
           type="button"
@@ -151,11 +177,34 @@ function MatchCard({
           disabled={saving}
           aria-pressed={saved}
           aria-label={`${saved ? "Unsave" : "Save"} ${job.title}`}
-          className="rounded-lg border border-border p-2.5 text-accent disabled:opacity-50"
+          className="col-start-2 row-start-1 self-start rounded-lg border border-border p-2.5 text-accent disabled:opacity-50"
         >
           <Bookmark className="h-4 w-4" fill={saved ? "currentColor" : "none"} />
         </button>
       </div>
+      {row.match_percentage != null && (
+        <p className="mt-4 text-[10px] leading-relaxed text-muted-foreground">
+          Calibrated on synthetic relevance examples. Review requirements and location; this
+          estimate is not a hiring probability.
+        </p>
+      )}
+      {row.filter_evidence && (
+        <div className="mt-3 space-y-1 text-[11px] text-muted-foreground">
+          {Object.entries(row.filter_evidence)
+            .filter(([, e]) => e.relation !== "not_requested")
+            .map(([key, e]) => (
+              <p key={key}>
+                Search {key}: {human(e.relation)} · {e.reason}
+              </p>
+            ))}
+        </div>
+      )}
+      {row.retrieval?.method_ranks && Object.keys(row.retrieval.method_ranks).length === 0 && (
+        <p className="mt-3 text-[11px] text-amber-300">
+          No positive retrieval signal. Included for complete review of this small filtered pool;
+          suitability is unestablished.
+        </p>
+      )}
       <p className="my-5 text-sm leading-relaxed text-muted-foreground">{row.explanation}</p>
       <div className="grid gap-4 sm:grid-cols-2">
         <SkillChips label="Matched required skills" skills={row.matched_required} />
@@ -163,6 +212,26 @@ function MatchCard({
         <SkillChips label="Matched preferred skills" skills={row.matched_preferred} />
         <SkillChips label="Preferred · no confirmed evidence" skills={row.missing_preferred} gap />
       </div>
+      {!!row.transferable_skills.length && (
+        <div className="mt-4">
+          <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+            Transferable foundations · requirements still need evidence
+          </p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {row.transferable_skills.map((skill, i) => (
+              <span key={i} className="career-pill" title={skill.reason}>
+                {skill.candidate_skill} → {skill.job_skill}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+      {row.retrieval?.method_ranks && (
+        <p className="mt-4 text-[10px] text-muted-foreground">
+          Retrieved by {Object.keys(row.retrieval.method_ranks).map(human).join(" · ")}. Location:{" "}
+          {human(row.components["location"]?.state || "unknown")}.
+        </p>
+      )}
       <details className="mt-5 border-t border-border pt-4">
         <summary className="cursor-pointer text-xs text-accent">
           Why this match · evidence and considerations
@@ -194,6 +263,19 @@ function MatchCard({
       </details>
       <details className="mt-4 border-t border-border pt-4">
         <summary className="cursor-pointer text-xs text-accent">Score breakdown</summary>
+        {row.method_scores && (
+          <div
+            className="mt-4 grid gap-2 text-[11px] sm:grid-cols-2"
+            aria-label="Independent retrieval scores"
+          >
+            {Object.entries(row.method_scores).map(([name, score]) => (
+              <p key={name}>
+                {human(name)}: {score == null ? "Unavailable / not scored" : score.toFixed(2)}
+                {name === "bm25_raw" ? " raw retrieval units" : " /100"}
+              </p>
+            ))}
+          </div>
+        )}
         <div className="mt-4 space-y-4">
           {Object.entries(row.components).map(([key, c]) => (
             <div key={key}>
@@ -235,6 +317,19 @@ function MatchCard({
             the final score.
           </p>
         </div>
+        {row.calibration && (
+          <details className="mt-4 text-xs">
+            <summary className="cursor-pointer text-accent">
+              How the displayed percentage is calibrated
+            </summary>
+            <p className="mt-3 leading-relaxed text-muted-foreground">
+              {row.calibration.interpretation || "Calibration unavailable for this saved run."}{" "}
+              Minimum-score filters use the raw hybrid score. Equal calibrated estimates keep their
+              raw ranking.
+            </p>
+            <SourceData value={row.calibration} />
+          </details>
+        )}
       </details>
       <details className="mt-4 border-t border-border pt-4">
         <summary className="cursor-pointer text-xs text-accent">Job details</summary>
@@ -309,6 +404,11 @@ function RunAudit({ run }: { run: MatchingRun }) {
         {run.elapsed_ms === null ? "In progress" : `${(run.elapsed_ms / 1000).toFixed(2)} seconds`}{" "}
         · dataset date {run.dataset_reference_date}
       </p>
+      <JobFilterAudit
+        audit={
+          audit.data?.filter_audit || (run.validation["filter_audit"] as FilterAudit | undefined)
+        }
+      />
       <ol className="mt-5 grid gap-3 sm:grid-cols-2">
         {run.tasks.map((t) => (
           <li key={t.stage} className="rounded-lg border border-border p-3 text-xs">
@@ -333,8 +433,29 @@ function RunAudit({ run }: { run: MatchingRun }) {
         ) : audit.isError ? (
           <ErrorNotice error={audit.error} />
         ) : (
-          <SourceData value={audit.data.candidate_snapshot} />
+          <>
+            <p className="mt-3 text-muted-foreground">
+              Derived role topics reflect confirmed text. They do not become preferences or matched
+              required skills.
+            </p>
+            <SourceData value={audit.data.candidate_snapshot} />
+          </>
         )}
+      </details>
+      <details className="mt-4 text-xs">
+        <summary className="cursor-pointer text-accent">
+          Retrieval pool and excluded opportunities
+        </summary>
+        <p className="mt-3 text-muted-foreground">
+          Every filtered listing is considered by retrieval. The configurable pool is reranked with
+          detailed compatibility features. Excluded IDs and reasons are recorded below.
+        </p>
+        <SourceData
+          value={
+            audit.data?.retrieval ||
+            run.validation["retrieval"] || { status: "Legacy run: retrieval audit unavailable" }
+          }
+        />
       </details>
       <details className="mt-4 text-xs">
         <summary className="cursor-pointer text-accent">
@@ -370,6 +491,7 @@ export function MatchesPage() {
   const [selected, setSelected] = useState("");
   const [search, setSearch] = useState(initialSearch);
   const [minimum, setMinimum] = useState(30);
+  const [poolSize, setPoolSize] = useState(1200);
   const [useAI, setUseAI] = useState(false);
   const [filters, setFilters] = useState(initialResults);
   const [page, setPage] = useState(1);
@@ -434,6 +556,7 @@ export function MatchesPage() {
             .filter(Boolean),
         },
         minimum_score: minimum,
+        retrieval_pool_size: poolSize,
         use_ai: useAI,
         allow_external_processing: useAI,
       }),
@@ -461,6 +584,7 @@ export function MatchesPage() {
       {label}
       <select
         className={input}
+        aria-label={label}
         value={search[key]}
         onChange={(e) => setSearch({ ...search, [key]: e.target.value })}
       >
@@ -478,6 +602,7 @@ export function MatchesPage() {
       {label}
       <input
         className={input}
+        aria-label={label}
         value={search[key]}
         maxLength={key === "skills" ? 300 : 120}
         onChange={(e) => setSearch({ ...search, [key]: e.target.value })}
@@ -556,7 +681,7 @@ export function MatchesPage() {
             <div className="flex flex-wrap justify-between gap-3">
               <h2 className="font-display text-2xl">Find your next possibility.</h2>
               <span className="career-pill">
-                {options.data?.total ?? "1,000"} seeded / mock listings
+                {options.data?.total ?? "10,000"} seeded / mock listings
               </span>
             </div>
             <p className="mt-2 text-xs text-muted-foreground">
@@ -565,6 +690,7 @@ export function MatchesPage() {
             </p>
             <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {text("keyword", "Job search")}
+              {text("role", "Role or career area")}
               {text("skills", "Required listing skills (comma separated)")}
               {select("category", "Job category", options.data?.categories || [])}
               {text("location", "Job location")}
@@ -577,9 +703,15 @@ export function MatchesPage() {
                   min={0}
                   max={100}
                   required
+                  step="any"
+                  aria-label="Minimum hybrid score"
                   value={minimum}
                   onChange={(e) => setMinimum(Number(e.target.value))}
                 />
+                <span className="mt-1 block text-[10px] text-muted-foreground">
+                  Raw score 0–100. 0.5 means half a point, not 50%. The experimental match
+                  percentage is separate.
+                </span>
               </label>
             </div>
             <details className="mt-4 rounded-lg border border-border p-4">
@@ -594,12 +726,61 @@ export function MatchesPage() {
                 {select("country", "Country", options.data?.countries || [])}
                 {select("industry", "Industry", options.data?.industries || [])}
                 {text("company", "Company")}
+                <label className="text-xs">
+                  Location reach
+                  <select
+                    className={input}
+                    aria-label="Location reach"
+                    value={search.location_scope}
+                    onChange={(e) => setSearch({ ...search, location_scope: e.target.value })}
+                  >
+                    <option value="compatible">City + remote roles in the country</option>
+                    <option value="city">Exact city</option>
+                    <option value="state">Same state</option>
+                    <option value="country">Same country</option>
+                  </select>
+                  <span className="mt-1 block text-[10px] text-muted-foreground">
+                    An explicit onsite work mode still excludes remote jobs.
+                  </span>
+                </label>
+                <label className="text-xs">
+                  Category scope
+                  <select
+                    className={input}
+                    aria-label="Category scope"
+                    value={search.category_scope}
+                    onChange={(e) => setSearch({ ...search, category_scope: e.target.value })}
+                  >
+                    <option value="family">Related role family</option>
+                    <option value="exact">Exact category only</option>
+                  </select>
+                  <span className="mt-1 block text-[10px] text-muted-foreground">
+                    AI includes ML, NLP, computer vision, deep learning and generative AI. Exact
+                    category remains available.
+                  </span>
+                </label>
+                <label className="text-xs">
+                  Retrieval pool size
+                  <input
+                    className={input}
+                    type="number"
+                    min={50}
+                    max={10000}
+                    required
+                    value={poolSize}
+                    onChange={(e) => setPoolSize(Number(e.target.value))}
+                  />
+                  <span className="mt-1 block text-[10px] text-muted-foreground">
+                    All filtered jobs are searched; up to this many receive detailed ranking.
+                  </span>
+                </label>
                 {(["posted_from", "posted_to"] as const).map((key) => (
                   <label key={key} className="text-xs">
                     {human(key)}
                     <input
                       type="date"
                       className={input}
+                      aria-label={human(key)}
                       value={search[key]}
                       onChange={(e) => setSearch({ ...search, [key]: e.target.value })}
                     />
@@ -676,6 +857,7 @@ export function MatchesPage() {
             Saved matching runs
             <select
               className={input}
+              aria-label="Saved matching runs"
               value={runId}
               onChange={(e) => {
                 setSelected(e.target.value);
@@ -699,6 +881,19 @@ export function MatchesPage() {
       {status.isError && <ErrorNotice error={status.error} retry={() => void status.refetch()} />}
       {run && (
         <>
+          {options.data && run.dataset_version !== options.data.dataset_version && (
+            <p className="mb-5 rounded-xl border border-accent/20 p-4 text-xs leading-relaxed text-muted-foreground">
+              This saved run uses an earlier job dataset. Choose Find Matching Jobs to search the
+              current {options.data.total.toLocaleString()} listings. Your saved results remain
+              available.
+            </p>
+          )}
+          {run.config["filter_version"] !== "structured-filters-v1" && (
+            <p className="mb-5 rounded-xl border border-accent/20 p-4 text-xs text-muted-foreground">
+              This saved run predates the location and role-filter fixes. Start a new run to apply
+              them; saved history remains unchanged.
+            </p>
+          )}
           {run.stale && (
             <div
               role="alert"
@@ -760,9 +955,12 @@ export function MatchesPage() {
             <>
               <div className="mb-5 grid gap-4 sm:grid-cols-3">
                 {[
-                  { label: "Recommendations", value: run.result_count },
-                  { label: "Unique jobs compared", value: run.eligible_jobs },
-                  { label: "Minimum hybrid score", value: run.minimum_score },
+                  { label: "Visible matches", value: results.data?.total ?? run.result_count },
+                  { label: "Jobs reranked", value: run.eligible_jobs },
+                  {
+                    label: "Current raw-score threshold",
+                    value: results.data?.diagnostics?.effective_minimum_score ?? run.minimum_score,
+                  },
                 ].map((metric) => (
                   <Panel key={metric.label} light>
                     <p className="text-[11px] text-muted-foreground">{metric.label}</p>
@@ -776,7 +974,9 @@ export function MatchesPage() {
                   : "Semantic embeddings unavailable · TF-IDF and explicit skill evidence used."}{" "}
                 {run.status === "partial"
                   ? "Partial completion: a requested enrichment stage was unavailable. Validated deterministic results were retained."
-                  : "Scoring and validation completed."}{" "}
+                  : run.eligible_jobs
+                    ? "Scoring and validation completed."
+                    : "No jobs reached scoring. See the filter diagnostics."}{" "}
                 AI review: {human(run.provider_metadata["ai_review"]?.status || "not selected")}
                 {run.provider_metadata["ai_review"]?.reviewed_jobs
                   ? ` · ${run.provider_metadata["ai_review"].reviewed_jobs} recommendations`
@@ -816,8 +1016,10 @@ export function MatchesPage() {
                     <input
                       className={input}
                       type="number"
-                      min={run.minimum_score}
+                      min={0}
+                      step="any"
                       max={100}
+                      aria-label="Narrow by minimum score"
                       value={filters.minimum_score}
                       placeholder={String(run.minimum_score)}
                       onChange={(e) => {
@@ -825,6 +1027,9 @@ export function MatchesPage() {
                         setPage(1);
                       }}
                     />
+                    <span className="mt-1 block text-[10px] text-muted-foreground">
+                      Filters raw hybrid points; the experimental percentage is separate.
+                    </span>
                   </label>
                   <label className="flex items-center gap-2 self-end py-3 text-xs">
                     <input
@@ -856,14 +1061,28 @@ export function MatchesPage() {
                       ? "sorted by baseline; cards retain their hybrid rank"
                       : "ranked by hybrid score"}
                   </p>
+                  <details className="mb-4 rounded-lg border border-border p-4 text-xs">
+                    <summary className="cursor-pointer text-accent">
+                      Result threshold and rendering audit
+                    </summary>
+                    <pre className="mt-3 max-h-64 overflow-auto whitespace-pre-wrap break-words text-[10px]">
+                      {JSON.stringify(
+                        {
+                          request: { run_id: runId, ...filters, page },
+                          diagnostics: results.data.diagnostics,
+                        },
+                        null,
+                        2,
+                      )}
+                    </pre>
+                  </details>
                   {results.data.total === 0 ? (
                     <Panel className="py-12 text-center">
                       <Target className="mx-auto h-6 w-6 text-accent" />
                       <h2 className="mt-4 font-display text-2xl">Room to explore.</h2>
                       <p className="mx-auto mt-3 max-w-md text-xs leading-relaxed text-muted-foreground">
-                        No opportunities meet these filters and the saved score threshold. Clear
-                        result filters, broaden the search, or start a new run with a lower
-                        threshold.
+                        {emptyExplanation[results.data.diagnostics?.empty_state || ""] ||
+                          "No opportunities meet these filters. Inspect the saved request and filter counts, or start a new run."}
                       </p>
                       <button
                         type="button"

@@ -4,9 +4,13 @@ import { BriefcaseBusiness, MapPin, Search } from "lucide-react";
 import { api } from "@/services/api/client";
 import type { DemoJob, JobFilters } from "@/services/api/types";
 import { ErrorNotice, Panel, PageHeading } from "./shared";
+import { JobFilterAudit } from "./JobFilterAudit";
 import { formatDate } from "@/lib/workspace-date";
 
 const emptyFilters: JobFilters = {
+  role: "",
+  location_scope: "city",
+  category_scope: "family",
   keyword: "",
   skills: "",
   location: "",
@@ -135,7 +139,7 @@ export function JobsPage() {
                 Comma separated. All skills must match; JS and JavaScript are equivalent.
               </span>
             </label>
-            {textField("location", "Location", "City or Remote")}
+            {textField("location", "Location", "Bengaluru, India or Remote")}
             {selectField(
               "work_mode",
               "Work arrangement",
@@ -172,6 +176,19 @@ export function JobsPage() {
                 "Any employment type",
               )}
               {textField("company", "Company", "Synthetic company name", 160)}
+              {textField("role", "Role or career area", "AI, ML, Backend Developer")}
+              {selectField(
+                "location_scope",
+                "Location reach",
+                ["city", "compatible", "state", "country"],
+                "Default city scope",
+              )}
+              {selectField(
+                "category_scope",
+                "Category scope",
+                ["family", "exact"],
+                "Default family scope",
+              )}
               {selectField(
                 "industry",
                 "Industry",
@@ -252,6 +269,7 @@ export function JobsPage() {
             {jobs.data.total} demonstration {jobs.data.total === 1 ? "job" : "jobs"} · dataset{" "}
             {jobs.data.dataset_version} · reference date {jobs.data.reference_date}
           </p>
+          <JobFilterAudit audit={jobs.data.audit} />
           {jobs.data.warnings.map((warning) => (
             <p key={warning} className="mb-4 text-xs text-accent">
               {warning}
@@ -261,7 +279,9 @@ export function JobsPage() {
             <Panel className="py-12 text-center">
               <h2 className="font-display text-2xl">No demonstration jobs found.</h2>
               <p className="mt-3 text-sm text-muted-foreground">
-                Try fewer filters or browse the whole dataset.
+                {jobs.data.audit?.empty_state === "no_jobs_in_dataset"
+                  ? "The dataset is empty."
+                  : "Jobs exist, but these search filters exclude them. Inspect Search and filter diagnostics, adjust the location/role/work mode, or browse the whole dataset."}
               </p>
               <button className="btn-ghost mt-5 !text-xs" type="button" onClick={reset}>
                 Browse all demo jobs

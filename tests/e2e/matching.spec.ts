@@ -48,10 +48,20 @@ test("full matching workflow exposes scores, evidence, bookmarks, audit, paginat
     }),
   ).toBeVisible();
   const first = cards.first();
-  await expect(first.getByText("Hybrid match", { exact: true })).toBeVisible();
-  await expect(first.getByText(/^Baseline /)).toBeVisible();
+  await first.scrollIntoViewIfNeeded();
+  await page.screenshot({ path: "/private/tmp/retrieval-recommendations-desktop.png" });
+  await expect(first.getByText("Experimental match estimate", { exact: true })).toBeVisible();
+  await expect(first.getByText(/^Raw hybrid .*Baseline /)).toBeVisible();
   await first.getByText("Score breakdown", { exact: true }).click();
   await expect(first.getByText("Final = max", { exact: false })).toBeVisible();
+  await expect(first.getByLabel("Independent retrieval scores")).toContainText("bm25");
+  await expect(first.getByLabel("Independent retrieval scores")).toContainText(
+    "word2vec: Unavailable",
+  );
+  await first.getByText("How the displayed percentage is calibrated", { exact: true }).click();
+  await expect(
+    first.locator("p").filter({ hasText: "Empirical synthetic relevance frequency" }),
+  ).toBeVisible();
   await first.getByText("Why this match · evidence and considerations", { exact: true }).click();
   await expect(first.getByText("Scores are comparison heuristics", { exact: false })).toBeVisible();
   await first.getByText("Job details", { exact: true }).click();
@@ -92,6 +102,10 @@ test("full matching workflow exposes scores, evidence, bookmarks, audit, paginat
     true,
   );
   await page.screenshot({ path: "/private/tmp/ascendra-matching-mobile.png", fullPage: true });
+  await first.scrollIntoViewIfNeeded();
+  await first.evaluate((el) => el.scrollIntoView({ block: "start" }));
+  await page.evaluate(() => window.scrollBy(0, -80));
+  await page.screenshot({ path: "/private/tmp/retrieval-recommendations-mobile.png" });
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto("/profile");
   await page.getByLabel("Your skills", { exact: true }).fill("Rust");

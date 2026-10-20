@@ -29,7 +29,7 @@ This variable includes `/api/v1` and is public build-time configuration, not a s
 | `/profile` | Create/update structured profile facts, individual skill rows with add/edit/remove controls, phone/links, revision conflicts, saved-fact confirmation, source documents, and verification timestamps. |
 | `/documents` | Upload PDF/DOCX/TXT; start local extraction or explicitly consent to optional CrewAI/Groq processing; observe processing; review/edit source-linked fields; confirm selected sections, request correction, reject, cancel, retry, or remove. |
 | `/settings` | Explains local identity, storage, cookie expiry, and current privacy/deletion limitations. |
-| `/jobs` | 1,000 explicitly labeled synthetic jobs across 46 categories; keyword/skill/location/work-mode/experience/category filters, advanced industry/company/country/employment/date filters, pagination, and loading/empty/error/retry states. No application submission. |
+| `/jobs` | 10,000 explicitly labeled synthetic jobs across 56 categories; keyword/skill/location/work-mode/experience/category filters, advanced industry/company/country/employment/date filters, pagination, and loading/empty/error/retry states. No application submission. |
 | `/matches` | Confirmed-profile matching, ranked mock opportunities, separate baseline/hybrid scores, source-grounded explanations, component breakdown, bookmarks, run audit, cancellation/retry and stale-result detection. |
 | `/skill-gaps`, `/applications` | Explicitly planned; no fabricated gap analyses or applications. |
 | `/workspace` | Preserved labeled sample demonstration, separate from the real workspace. |
@@ -50,7 +50,7 @@ Upload a readable resume, then choose **Process document**. Processing stays loc
 
 Review source quotes, heuristic confidence, and missing-field warnings. Expand sections to edit, then save draft edits. Select sections to apply and confirm accuracy before **Confirm and save profile**. Lists add unique entries; replacement requires an explicit choice. Different saved scalar values start unselected. Profile/draft revision conflicts require reload and renewed review. Edited values are labeled candidate corrections rather than claimed document quotes.
 
-Only selected, confirmed sections reach the profile. Dashboard counts derive from stored profile facts and review receipts. Scanned PDFs use local OCR when available, with separate source labels and manual-review warnings. Live job retrieval, matching, and the broader career orchestrator remain planned. Local extraction handles basic headings/records and may miss complex layouts; the UI clearly labels its limits. Selection and replacement operate per top-level section, not per individual nested record.
+Only selected, confirmed sections reach the profile. Dashboard counts derive from stored profile facts and review receipts. Scanned PDFs use local OCR when available, with separate source labels and manual-review warnings. Confirmed-profile matching is available; live job retrieval and the broader career orchestrator remain planned. Local extraction handles basic headings/records and may miss complex layouts; the UI clearly labels its limits. Selection and replacement operate per top-level section, not per individual nested record.
 
 ## UI organization
 
@@ -98,9 +98,9 @@ Calendar dates from seeded jobs (`YYYY-MM-DD`) are converted to a complete ISO U
 
 ## Larger demonstration job corpus
 
-`/jobs` now reads 1,000 deterministic synthetic listings from the backend. Category choices come from `/jobs/options`. **More filters** expands employment, company, industry, country, posted-date and availability controls. **Role details** shows responsibilities, tools, education, languages and labeled evaluation cases. Compensation uses each record's currency and month/year period. Expired/future examples are labeled against the displayed fixed dataset reference date; these are not live vacancies.
+`/jobs` now reads 10,000 deterministic synthetic listings from the backend. Category choices come from `/jobs/options`. **More filters** expands employment, company, industry, country, posted-date and availability controls. **Role details** shows responsibilities, tools, education, languages and labeled evaluation cases. Compensation uses each record's currency and month/year period. Expired/future examples are labeled against the displayed fixed dataset reference date; these are not live vacancies.
 
-Generation, safe reseeding, quality validation and the 16 future-matching evaluation cases are documented in the backend `README.md` and `docs/seeded-jobs-dataset.md`. Reseeding touches only the job fixture, with no profile/document/processing data changes. Matching and live job providers remain planned.
+Generation, safe reseeding, quality validation and the 16 future-matching evaluation cases are documented in the backend `README.md` and `docs/seeded-jobs-dataset.md`. Reseeding touches only the job fixture, with no profile/document/processing data changes. Matching is available on `/matches`; live job providers remain planned.
 
 ## Resume Intelligence audit
 
@@ -130,3 +130,21 @@ Validation for this milestone: `npm run typecheck`, `npm run lint` (0 errors; 10
 Document review now exposes a strict connected canonical representation between raw extraction and the editable draft. Expand the connected graph to inspect original wording, source IDs, parent entries, confidence and correction links. Separate panels show validation, bounded repair cycles, source conflicts and actual Flow tasks. Download the original privately, select previous extraction versions and compare saved draft changes. Reprocessing creates a new version without updating your confirmed profile.
 
 Additional original sections such as research, leadership, volunteering and languages are preserved in the draft and profile editor. Project tools, outcomes, repository and deployment URL fields retain source evidence. Optional model work still requires explicit text/image consent; unavailable/rate-limited stages stay labelled and deterministic results are retained. See the backend's `docs/connected-resume-intelligence.md` and `docs/canonical-evaluation.json` for architecture, tests and limits.
+
+## Expanded retrieval and score display
+
+`/matches` searches the full 10,000-job corpus before reranking a configurable pool. Cards show an explicitly experimental calibrated synthetic-relevance percentage separately from the raw hybrid score and TF-IDF baseline. Advanced filters expose retrieval-pool size. Expanded audits include BM25/skill/semantic/word-vector scores, explicit unavailability, calibration support, retrieval candidates/exclusions and field evidence. Existing histories remain readable. See backend `docs/job-matching-10000.md` for evaluation and limits.
+
+## Search and filter diagnostics
+
+The Bengaluru/AI zero-result audit fixed combined city/country normalization, Bangalore aliases, controlled AI-family retrieval and saved-threshold overrides. The frontend defaults to city plus country-compatible remote roles, with explicit exact-city/state/country choices under **More search filters**. Selecting onsite still excludes remote roles. A separate role field accepts AI/ML/NLP and related vocabulary; category scope can be restricted to an exact category.
+
+Both threshold controls accept fractional **0–100 raw points**. `0.5` is half a point, `50` is fifty points, and a result threshold of zero can reveal previously scored rows below the saved threshold. Hard-filter changes require a fresh run. Historical runs are preserved and labelled when they lack current diagnostics.
+
+Expand **Matching audit → Search and filter diagnostics** for request parameters, normalized filters and counts at each stage. Excluded-job JSON previews are bounded to 100 rows and searchable by job ID/reason. Cards explain location and role eligibility separately from candidate skill evidence. Empty states distinguish dataset absence, hard filters, score thresholds, result filters and unavailable ranking providers. The backend's `docs/ai-location-audit.md` contains evidence and limitations.
+
+Run browser checks against an isolated backend with both URLs:
+
+```sh
+E2E_BASE_URL=http://localhost:5174 E2E_API_BASE_URL=http://localhost:8001/api/v1 npm run test:e2e
+```

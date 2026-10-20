@@ -3,11 +3,11 @@ import { expect, test } from "@playwright/test";
 test("seeded jobs search, filters, pagination and mobile layout", async ({ page }) => {
   await page.goto("/jobs");
   await expect(page.getByText("Seeded demonstration jobs", { exact: true })).toBeVisible();
-  await expect(page.getByRole("status")).toContainText("1000 demonstration jobs");
-  await expect(page.getByText("Page 1 of 167", { exact: true })).toBeVisible();
+  await expect(page.getByRole("status")).toContainText("10000 demonstration jobs");
+  await expect(page.getByText("Page 1 of 1667", { exact: true })).toBeVisible();
   await expect(page.getByText("Seeded / mock", { exact: true })).toHaveCount(6);
   await page.getByRole("button", { name: "Next page" }).click();
-  await expect(page.getByText("Page 2 of 167", { exact: true })).toBeVisible();
+  await expect(page.getByText("Page 2 of 1667", { exact: true })).toBeVisible();
   await expect(page.getByText("Seeded / mock", { exact: true })).toHaveCount(6);
   await page.getByText("More filters", { exact: true }).click();
   await page.getByLabel("Company", { exact: true }).fill("Demo River Systems");
@@ -23,7 +23,7 @@ test("seeded jobs search, filters, pagination and mobile layout", async ({ page 
   await page.getByRole("button", { name: "Search jobs", exact: true }).click();
   await expect(page.getByRole("heading", { name: "No demonstration jobs found." })).toBeVisible();
   await page.getByRole("button", { name: "Browse all demo jobs" }).click();
-  await expect(page.getByRole("status")).toContainText("1000 demonstration jobs");
+  await expect(page.getByRole("status")).toContainText("10000 demonstration jobs");
   await page.getByLabel("Company", { exact: true }).fill("Demo River Systems");
   await page.getByLabel("Category", { exact: true }).selectOption("backend");
   await page.getByLabel("Location", { exact: true }).fill("Noida");
@@ -37,7 +37,7 @@ test("seeded jobs search, filters, pagination and mobile layout", async ({ page 
   await page.screenshot({ path: "/private/tmp/careeros-jobs-mobile.png", fullPage: true });
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.getByRole("button", { name: "Reset filters" }).click();
-  await expect(page.getByRole("status")).toContainText("1000 demonstration jobs");
+  await expect(page.getByRole("status")).toContainText("10000 demonstration jobs");
   await page.screenshot({ path: "/private/tmp/careeros-jobs-desktop.png", fullPage: true });
   await expect(page.getByRole("link", { name: /apply/i })).toHaveCount(0);
 });
@@ -58,18 +58,18 @@ test("jobs loading and recoverable error states keep demo labeling", async ({ pa
   await expect(page.getByRole("alert")).toContainText("couldn’t reach your workspace");
   await page.unroute("**/api/v1/jobs?**");
   await page.getByRole("button", { name: "Try again" }).click();
-  await expect(page.getByRole("status")).toContainText("1000 demonstration jobs");
+  await expect(page.getByRole("status")).toContainText("10000 demonstration jobs");
 });
 
 test("expanded categories, hybrid roles, employment, country and dataset date filters", async ({
   page,
 }) => {
   await page.goto("/jobs");
-  await expect(page.getByRole("status")).toContainText("1000 demonstration jobs");
-  await expect(page.getByLabel("Category", { exact: true }).locator("option")).toHaveCount(47);
+  await expect(page.getByRole("status")).toContainText("10000 demonstration jobs");
+  await expect(page.getByLabel("Category", { exact: true }).locator("option")).toHaveCount(57);
   await page.getByLabel("Category", { exact: true }).selectOption("embedded");
   await page.getByRole("button", { name: "Search jobs", exact: true }).click();
-  await expect(page.getByRole("status")).not.toContainText("1000 demonstration jobs");
+  await expect(page.getByRole("status")).not.toContainText("10000 demonstration jobs");
   await expect(page.getByRole("heading", { level: 2 }).first()).toContainText("Embedded");
   await page.getByRole("button", { name: "Reset filters" }).click();
   await page.getByLabel("Work arrangement").selectOption("hybrid");

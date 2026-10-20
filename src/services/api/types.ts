@@ -206,7 +206,22 @@ export type AgentRun = {
   created_at: string;
   completed_at: string | null;
 };
+export type FilterAudit = {
+  version: string;
+  total_jobs: number;
+  after_hard_filters: number;
+  after_result_limit: number;
+  first_empty_filter: string | null;
+  empty_state: string;
+  request_filters: Record<string, unknown>;
+  normalized_filters: Record<string, unknown>;
+  steps: { filter: string; input_count: number; kept_count: number; excluded_count: number }[];
+  excluded_jobs?: { job_id: string; reason: string }[];
+};
 export type JobFilters = {
+  role?: string;
+  category_scope?: string;
+  location_scope?: string;
   keyword: string;
   skills: string;
   location: string;
@@ -274,6 +289,11 @@ export type JobOptions = {
   reference_date: string;
 };
 export type JobPage = {
+  audit?: FilterAudit;
+  match_context?: Record<
+    string,
+    Record<string, { accepted: boolean; relation: string; reason: string }>
+  >;
   items: DemoJob[];
   total: number;
   matched_total: number;
