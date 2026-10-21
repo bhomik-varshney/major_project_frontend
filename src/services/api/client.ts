@@ -1,5 +1,6 @@
 import type { GapRun, GapPage, GapStart } from "./skill-gap-types";
 import type { CoverLetter, CoverStart, Signature } from "./cover-letter-types";
+import type { TailoredResume, ResumeStart, TailoringReadiness } from "./resume-tailoring-types";
 import type {
   Application,
   ApplicationAction,
@@ -133,6 +134,49 @@ const json = (method: string, body: unknown): RequestInit => ({
 });
 
 export const api = {
+  tailoringReadiness: () => privateRequest<TailoringReadiness>("/resume-tailoring/readiness"),
+  tailoredResumes: (application: string) =>
+    privateRequest<TailoredResume[]>(
+      `/resume-tailoring?${new URLSearchParams({ application_id: application })}`,
+    ),
+  tailoredResume: (id: string) =>
+    privateRequest<TailoredResume>(`/resume-tailoring/${encodeURIComponent(id)}`),
+  startResumeTailoring: (application: string, payload: ResumeStart) =>
+    privateRequest<TailoredResume>(
+      `/resume-tailoring/applications/${encodeURIComponent(application)}`,
+      json("POST", payload),
+    ),
+  tailoredResumeAction: (
+    id: string,
+    payload: {
+      action: string;
+      expected_revision: number;
+      expected_application_revision?: number;
+      reviewed?: boolean;
+    },
+  ) =>
+    privateRequest<TailoredResume>(
+      `/resume-tailoring/${encodeURIComponent(id)}/actions`,
+      json("POST", payload),
+    ),
+  tailoredResumeArtifact: (
+    id: string,
+    kind: "pdf" | "preview" | "source" | "class" | "compile-log",
+  ) =>
+    privateRequest<Blob>(
+      `/resume-tailoring/${encodeURIComponent(id)}/artifacts/${kind}`,
+      {},
+      undefined,
+      true,
+    ),
+  uploadResumeSource: (file: File) => {
+    const form = new FormData();
+    form.set("file", file);
+    return privateRequest<{ id: string; filename: string }>("/resume-tailoring/sources", {
+      method: "POST",
+      body: form,
+    });
+  },
   coverReadiness: () =>
     privateRequest<{
       engine_available: boolean;

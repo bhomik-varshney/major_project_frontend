@@ -395,6 +395,9 @@ function ApplicationDetail({ record, refresh }: { record: Application; refresh: 
           <Link to="/cover-letters" search={{ application: record.id }} className={buttonClass}>
             Prepare cover letter
           </Link>
+          <Link to="/resume-tailoring" search={{ application: record.id }} className={buttonClass}>
+            Tailor resume
+          </Link>
         </div>
         <p className="mt-5 text-sm" aria-label="Application state">
           {label(record.status)}

@@ -50,7 +50,16 @@ export type Application = {
   id: string;
   revision: number;
   job_id: string;
-  job: { title: string; company: string; location: string; application_url: string };
+  job: {
+    title: string;
+    company: string;
+    location: string;
+    application_url: string;
+    required_skills?: string[];
+    preferred_skills?: string[];
+    responsibilities?: string[];
+    description?: string;
+  };
   status: string;
   stage: string;
   provider: string;

@@ -19,6 +19,7 @@ import { Route as StudentDocumentsRouteImport } from './routes/_student.document
 import { Route as StudentJobsRouteImport } from './routes/_student.jobs'
 import { Route as StudentMatchesRouteImport } from './routes/_student.matches'
 import { Route as StudentProfileRouteImport } from './routes/_student.profile'
+import { Route as StudentResumeTailoringRouteImport } from './routes/_student.resume-tailoring'
 import { Route as StudentSettingsRouteImport } from './routes/_student.settings'
 import { Route as StudentSkillGapsRouteImport } from './routes/_student.skill-gaps'
 
@@ -71,6 +72,11 @@ const StudentProfileRoute = StudentProfileRouteImport.update({
   path: '/profile',
   getParentRoute: () => StudentRoute,
 } as any)
+const StudentResumeTailoringRoute = StudentResumeTailoringRouteImport.update({
+  id: '/resume-tailoring',
+  path: '/resume-tailoring',
+  getParentRoute: () => StudentRoute,
+} as any)
 const StudentSettingsRoute = StudentSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -92,6 +98,7 @@ export interface FileRoutesByFullPath {
   '/jobs': typeof StudentJobsRoute
   '/matches': typeof StudentMatchesRoute
   '/profile': typeof StudentProfileRoute
+  '/resume-tailoring': typeof StudentResumeTailoringRoute
   '/settings': typeof StudentSettingsRoute
   '/skill-gaps': typeof StudentSkillGapsRoute
 }
@@ -105,6 +112,7 @@ export interface FileRoutesByTo {
   '/jobs': typeof StudentJobsRoute
   '/matches': typeof StudentMatchesRoute
   '/profile': typeof StudentProfileRoute
+  '/resume-tailoring': typeof StudentResumeTailoringRoute
   '/settings': typeof StudentSettingsRoute
   '/skill-gaps': typeof StudentSkillGapsRoute
 }
@@ -120,6 +128,7 @@ export interface FileRoutesById {
   '/_student/jobs': typeof StudentJobsRoute
   '/_student/matches': typeof StudentMatchesRoute
   '/_student/profile': typeof StudentProfileRoute
+  '/_student/resume-tailoring': typeof StudentResumeTailoringRoute
   '/_student/settings': typeof StudentSettingsRoute
   '/_student/skill-gaps': typeof StudentSkillGapsRoute
 }
@@ -135,6 +144,7 @@ export interface FileRouteTypes {
     | '/jobs'
     | '/matches'
     | '/profile'
+    | '/resume-tailoring'
     | '/settings'
     | '/skill-gaps'
   fileRoutesByTo: FileRoutesByTo
@@ -148,6 +158,7 @@ export interface FileRouteTypes {
     | '/jobs'
     | '/matches'
     | '/profile'
+    | '/resume-tailoring'
     | '/settings'
     | '/skill-gaps'
   id:
@@ -162,6 +173,7 @@ export interface FileRouteTypes {
     | '/_student/jobs'
     | '/_student/matches'
     | '/_student/profile'
+    | '/_student/resume-tailoring'
     | '/_student/settings'
     | '/_student/skill-gaps'
   fileRoutesById: FileRoutesById
@@ -244,6 +256,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StudentProfileRouteImport
       parentRoute: typeof StudentRoute
     }
+    '/_student/resume-tailoring': {
+      id: '/_student/resume-tailoring'
+      path: '/resume-tailoring'
+      fullPath: '/resume-tailoring'
+      preLoaderRoute: typeof StudentResumeTailoringRouteImport
+      parentRoute: typeof StudentRoute
+    }
     '/_student/settings': {
       id: '/_student/settings'
       path: '/settings'
@@ -269,6 +288,7 @@ interface StudentRouteChildren {
   StudentJobsRoute: typeof StudentJobsRoute
   StudentMatchesRoute: typeof StudentMatchesRoute
   StudentProfileRoute: typeof StudentProfileRoute
+  StudentResumeTailoringRoute: typeof StudentResumeTailoringRoute
   StudentSettingsRoute: typeof StudentSettingsRoute
   StudentSkillGapsRoute: typeof StudentSkillGapsRoute
 }
@@ -281,6 +301,7 @@ const StudentRouteChildren: StudentRouteChildren = {
   StudentJobsRoute: StudentJobsRoute,
   StudentMatchesRoute: StudentMatchesRoute,
   StudentProfileRoute: StudentProfileRoute,
+  StudentResumeTailoringRoute: StudentResumeTailoringRoute,
   StudentSettingsRoute: StudentSettingsRoute,
   StudentSkillGapsRoute: StudentSkillGapsRoute,
 }

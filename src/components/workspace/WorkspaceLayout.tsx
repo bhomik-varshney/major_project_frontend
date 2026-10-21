@@ -30,6 +30,7 @@ const navigation = [
   { to: "/skill-gaps", label: "Skill gaps", icon: Sparkles },
   { to: "/applications", label: "Applications", icon: CheckCheck },
   { to: "/cover-letters", label: "Cover letters", icon: FileText },
+  { to: "/resume-tailoring", label: "Resume tailoring", icon: FileText },
   { to: "/settings", label: "Workspace settings", icon: Settings2 },
 ] as const;
 

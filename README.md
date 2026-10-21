@@ -180,3 +180,10 @@ Readable application preparation now uses a shared typed preview for the native 
 Use **Cover letters** in the sidebar, or **Prepare cover letter** on an application. The workspace supports evidence-grounded generation, tone/length/date, paragraph editing/regeneration, signature upload/explicit omission, an actual LaTeX PDF preview, downloads, review/approval, version history and attachment to the same application. The expandable audit shows sources, claims, CrewAI/model/fallback status and compilation/PDF checks. Generated content and attachments never submit an application.
 
 The optional Groq checkbox consents to exporting selected evidence/job context for that generation; signature images and contact details stay local. Compiler/signature failures are explicit, and previous approved versions remain intact. See the [backend implementation guide](../major_project_backend/docs/cover-letter-agent.md). Run `npx playwright test tests/e2e/cover-letters.spec.ts` against isolated test API/data, and `npm run typecheck`, `npm run lint`, `npm run build`.
+
+
+## Resume tailoring
+
+Use **Resume tailoring** or **Applications → Tailor resume** for a separate job-specific one-page document in the supplied navy LaTeX design. Seven views cover requirements, plan, source-backed content editing, comparison, PDF preview, validation and approval/attachment. Source-only TeX facts must first be confirmed through profile review; uploaded TeX is a passive reference. Unsupported claims/edits are rejected, and original documents/profile remain unchanged. Optional Groq/CrewAI processing requires per-version consent.
+
+See the [implementation report](../major_project_backend/docs/resume-tailoring-agent.md). Run `npx playwright test tests/e2e/resume-tailoring.spec.ts` against isolated API/data; the fixtures are synthetic.
