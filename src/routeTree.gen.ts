@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as StudentRouteImport } from './routes/_student'
 import { Route as WorkspaceRouteImport } from './routes/workspace'
 import { Route as StudentApplicationsRouteImport } from './routes/_student.applications'
+import { Route as StudentCoverLettersRouteImport } from './routes/_student.cover-letters'
 import { Route as StudentDashboardRouteImport } from './routes/_student.dashboard'
 import { Route as StudentDocumentsRouteImport } from './routes/_student.documents'
 import { Route as StudentJobsRouteImport } from './routes/_student.jobs'
@@ -38,6 +39,11 @@ const WorkspaceRoute = WorkspaceRouteImport.update({
 const StudentApplicationsRoute = StudentApplicationsRouteImport.update({
   id: '/applications',
   path: '/applications',
+  getParentRoute: () => StudentRoute,
+} as any)
+const StudentCoverLettersRoute = StudentCoverLettersRouteImport.update({
+  id: '/cover-letters',
+  path: '/cover-letters',
   getParentRoute: () => StudentRoute,
 } as any)
 const StudentDashboardRoute = StudentDashboardRouteImport.update({
@@ -80,6 +86,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/workspace': typeof WorkspaceRoute
   '/applications': typeof StudentApplicationsRoute
+  '/cover-letters': typeof StudentCoverLettersRoute
   '/dashboard': typeof StudentDashboardRoute
   '/documents': typeof StudentDocumentsRoute
   '/jobs': typeof StudentJobsRoute
@@ -92,6 +99,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/workspace': typeof WorkspaceRoute
   '/applications': typeof StudentApplicationsRoute
+  '/cover-letters': typeof StudentCoverLettersRoute
   '/dashboard': typeof StudentDashboardRoute
   '/documents': typeof StudentDocumentsRoute
   '/jobs': typeof StudentJobsRoute
@@ -106,6 +114,7 @@ export interface FileRoutesById {
   '/_student': typeof StudentRouteWithChildren
   '/workspace': typeof WorkspaceRoute
   '/_student/applications': typeof StudentApplicationsRoute
+  '/_student/cover-letters': typeof StudentCoverLettersRoute
   '/_student/dashboard': typeof StudentDashboardRoute
   '/_student/documents': typeof StudentDocumentsRoute
   '/_student/jobs': typeof StudentJobsRoute
@@ -120,6 +129,7 @@ export interface FileRouteTypes {
     | '/'
     | '/workspace'
     | '/applications'
+    | '/cover-letters'
     | '/dashboard'
     | '/documents'
     | '/jobs'
@@ -132,6 +142,7 @@ export interface FileRouteTypes {
     | '/'
     | '/workspace'
     | '/applications'
+    | '/cover-letters'
     | '/dashboard'
     | '/documents'
     | '/jobs'
@@ -145,6 +156,7 @@ export interface FileRouteTypes {
     | '/_student'
     | '/workspace'
     | '/_student/applications'
+    | '/_student/cover-letters'
     | '/_student/dashboard'
     | '/_student/documents'
     | '/_student/jobs'
@@ -188,6 +200,13 @@ declare module '@tanstack/react-router' {
       path: '/applications'
       fullPath: '/applications'
       preLoaderRoute: typeof StudentApplicationsRouteImport
+      parentRoute: typeof StudentRoute
+    }
+    '/_student/cover-letters': {
+      id: '/_student/cover-letters'
+      path: '/cover-letters'
+      fullPath: '/cover-letters'
+      preLoaderRoute: typeof StudentCoverLettersRouteImport
       parentRoute: typeof StudentRoute
     }
     '/_student/dashboard': {
@@ -244,6 +263,7 @@ declare module '@tanstack/react-router' {
 
 interface StudentRouteChildren {
   StudentApplicationsRoute: typeof StudentApplicationsRoute
+  StudentCoverLettersRoute: typeof StudentCoverLettersRoute
   StudentDashboardRoute: typeof StudentDashboardRoute
   StudentDocumentsRoute: typeof StudentDocumentsRoute
   StudentJobsRoute: typeof StudentJobsRoute
@@ -255,6 +275,7 @@ interface StudentRouteChildren {
 
 const StudentRouteChildren: StudentRouteChildren = {
   StudentApplicationsRoute: StudentApplicationsRoute,
+  StudentCoverLettersRoute: StudentCoverLettersRoute,
   StudentDashboardRoute: StudentDashboardRoute,
   StudentDocumentsRoute: StudentDocumentsRoute,
   StudentJobsRoute: StudentJobsRoute,

@@ -1,3 +1,12 @@
+import type { GapRun, GapPage, GapStart } from "./skill-gap-types";
+import type { CoverLetter, CoverStart, Signature } from "./cover-letter-types";
+import type {
+  Application,
+  ApplicationAction,
+  ApplicationEvent,
+  ApplicationReadiness,
+  ApplicationSurface,
+} from "./application-types";
 import type {
   MatchReadiness,
   MatchingRun,
@@ -47,7 +56,11 @@ async function request<T>(
   binary = false,
 ): Promise<T> {
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 15_000);
+  // MCP read-only discovery/resource calls may make one bounded retry.
+  const timeout = setTimeout(
+    () => controller.abort(),
+    /\/applications\/[^/]+\/mcp\/(resource|tools)$/.test(path) ? 70_000 : 15_000,
+  );
   const onAbort = () => controller.abort();
   callerSignal?.addEventListener("abort", onAbort, { once: true });
   if (callerSignal?.aborted) controller.abort();
@@ -120,6 +133,236 @@ const json = (method: string, body: unknown): RequestInit => ({
 });
 
 export const api = {
+  coverReadiness: () =>
+    privateRequest<{
+      engine_available: boolean;
+      fonts_available: boolean;
+      profile_ready: boolean;
+      candidate_name: string;
+      groq_configured: boolean;
+      message: string;
+    }>("/cover-letters/readiness"),
+  coverLetters: (application: string) =>
+    privateRequest<CoverLetter[]>(
+      `/cover-letters?${new URLSearchParams({ application_id: application })}`,
+    ),
+  coverLetter: (id: string) =>
+    privateRequest<CoverLetter>(`/cover-letters/${encodeURIComponent(id)}`),
+  createCoverLetter: (application: string, body: CoverStart) =>
+    privateRequest<CoverLetter>(
+      `/cover-letters/applications/${encodeURIComponent(application)}`,
+      json("POST", body),
+    ),
+  coverAction: (
+    id: string,
+    body: {
+      action: "render" | "approve" | "attach" | "cancel";
+      expected_revision: number;
+      expected_application_revision?: number;
+      reviewed?: boolean;
+      signature_id?: string;
+      include_signature?: boolean;
+      signature_approved?: boolean;
+      signature_width_mm?: number;
+    },
+  ) =>
+    privateRequest<CoverLetter>(
+      `/cover-letters/${encodeURIComponent(id)}/actions`,
+      json("POST", body),
+    ),
+  coverArtifact: (id: string, kind: "pdf" | "preview" | "source" | "compile-log") =>
+    privateRequest<Blob>(
+      `/cover-letters/${encodeURIComponent(id)}/artifacts/${kind}`,
+      {},
+      undefined,
+      true,
+    ),
+  signatures: () => privateRequest<Signature[]>("/cover-letters/signatures"),
+  uploadSignature: (file: File, name: string) => {
+    const form = new FormData();
+    form.set("file", file);
+    form.set("signer_name", name);
+    form.set("approved", "true");
+    return privateRequest<Signature>("/cover-letters/signatures", { method: "POST", body: form });
+  },
+  signatureImage: (id: string) =>
+    privateRequest<Blob>(
+      `/cover-letters/signatures/${encodeURIComponent(id)}/image`,
+      {},
+      undefined,
+      true,
+    ),
+  applicationReadiness: (signal?: AbortSignal) =>
+    privateRequest<ApplicationReadiness>("/applications/readiness", {}, signal),
+  applications: (page = 1, status = "", signal?: AbortSignal, q = "", sort = "updated") =>
+    privateRequest<{ items: Application[]; total: number; page: number; page_size: number }>(
+      `/applications?${new URLSearchParams({ page: String(page), status, q, sort })}`,
+      {},
+      signal,
+    ),
+  application: (id: string, signal?: AbortSignal) =>
+    privateRequest<Application>(`/applications/${encodeURIComponent(id)}`, {}, signal),
+  createApplication: (payload: {
+    job_id: string;
+    matching_run_id?: string;
+    provider: string;
+    use_ai: boolean;
+    allow_external_processing: boolean;
+    demo_scenario?: string;
+  }) => privateRequest<Application>("/applications", json("POST", payload)),
+  applicationAction: (id: string, payload: ApplicationAction) =>
+    privateRequest<Application>(
+      `/applications/${encodeURIComponent(id)}/actions`,
+      json("POST", payload),
+    ),
+  applicationAudit: (id: string, signal?: AbortSignal) =>
+    privateRequest<Record<string, unknown>>(
+      `/applications/${encodeURIComponent(id)}/audit`,
+      {},
+      signal,
+    ),
+  applicationSchedule: (signal?: AbortSignal) =>
+    privateRequest<
+      {
+        id: string;
+        application_id: string;
+        title: string;
+        kind: string;
+        text: string;
+        due_at: string;
+        completed: boolean;
+      }[]
+    >("/applications/schedule", {}, signal),
+  completeApplicationTask: (id: string, taskId: string, revision: number) =>
+    privateRequest<Application>(
+      `/applications/${encodeURIComponent(id)}/tasks/${encodeURIComponent(taskId)}/complete`,
+      json("POST", { expected_revision: revision }),
+    ),
+  applicationTimeline: (id: string, signal?: AbortSignal) =>
+    privateRequest<ApplicationEvent[]>(
+      `/applications/${encodeURIComponent(id)}/timeline`,
+      {},
+      signal,
+    ),
+  applicationSurface: (id: string, signal?: AbortSignal) =>
+    privateRequest<ApplicationSurface>(
+      `/applications/${encodeURIComponent(id)}/surface`,
+      {},
+      signal,
+    ),
+  applicationResource: (id: string, signal?: AbortSignal) =>
+    privateRequest<{ html: string; mime_type: string; uri: string }>(
+      `/applications/${encodeURIComponent(id)}/mcp/resource`,
+      {},
+      signal,
+    ),
+  applicationTool: (
+    id: string,
+    payload: { name: string; expected_revision: number; fields?: ApplicationAction["fields"] },
+  ) =>
+    privateRequest<{ content: { type: "text"; text: string }[]; isError: boolean }>(
+      `/applications/${encodeURIComponent(id)}/mcp/call`,
+      json("POST", payload),
+    ),
+  applicationTools: (id: string, signal?: AbortSignal) =>
+    privateRequest<Record<string, unknown>>(
+      `/applications/${encodeURIComponent(id)}/mcp/tools`,
+      {},
+      signal,
+    ),
+  applicationTracking: (
+    id: string,
+    payload: {
+      expected_revision: number;
+      kind: string;
+      text: string;
+      status?: string;
+      due_at?: string;
+    },
+  ) =>
+    privateRequest<Application>(
+      `/applications/${encodeURIComponent(id)}/tracking`,
+      json("POST", payload),
+    ),
+  streamApplication: async (
+    id: string,
+    after: number,
+    signal: AbortSignal,
+    onEvent: (event: { seq: number; type: string }) => void,
+  ) => {
+    await ensureSession();
+    const response = await fetch(
+      `${apiBaseUrl}/applications/${encodeURIComponent(id)}/events?after=${after}`,
+      { credentials: "include", headers: { "X-Workspace-Client": "careeros-web" }, signal },
+    );
+    if (!response.ok || !response.body)
+      throw new ApiError(
+        "Application progress stream unavailable. Saved state remains available.",
+        response.status,
+      );
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+    try {
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const frames = buffer.split("\n\n");
+        buffer = frames.pop() || "";
+        for (const frame of frames) {
+          const data = frame
+            .split("\n")
+            .filter((line) => line.startsWith("data:"))
+            .map((line) => line.slice(5).trim())
+            .join("\n");
+          if (data) onEvent(JSON.parse(data) as { seq: number; type: string });
+        }
+      }
+    } finally {
+      await reader.cancel().catch(() => undefined);
+      reader.releaseLock();
+    }
+  },
+  gapReadiness: (signal?: AbortSignal) =>
+    privateRequest<{
+      can_analyse: boolean;
+      profile_revision: number | null;
+      confirmed_fields: string[];
+      message: string;
+    }>("/skill-gaps/readiness", {}, signal),
+  gapRuns: (signal?: AbortSignal) => privateRequest<GapRun[]>("/skill-gaps/runs", {}, signal),
+  gapRun: (id: string, signal?: AbortSignal) =>
+    privateRequest<GapRun>(`/skill-gaps/runs/${encodeURIComponent(id)}`, {}, signal),
+  startGap: (payload: GapStart) =>
+    privateRequest<GapRun>("/skill-gaps/runs", json("POST", payload)),
+  retryGap: (id: string) =>
+    privateRequest<GapRun>(`/skill-gaps/runs/${encodeURIComponent(id)}/retry`, { method: "POST" }),
+  cancelGap: (id: string) =>
+    privateRequest<GapRun>(`/skill-gaps/runs/${encodeURIComponent(id)}/cancel`, { method: "POST" }),
+  gapResults: (id: string, page: number, priority: string, signal?: AbortSignal) =>
+    privateRequest<GapPage>(
+      `/skill-gaps/runs/${encodeURIComponent(id)}/results?${new URLSearchParams({ page: String(page), page_size: "12", priority })}`,
+      {},
+      signal,
+    ),
+  gapAudit: (id: string, signal?: AbortSignal) =>
+    privateRequest<Record<string, unknown>>(
+      `/skill-gaps/runs/${encodeURIComponent(id)}/audit`,
+      {},
+      signal,
+    ),
+  gapEvidence: (id: string, gap: string, signal?: AbortSignal) =>
+    privateRequest<Record<string, unknown>>(
+      `/skill-gaps/runs/${encodeURIComponent(id)}/gaps/${encodeURIComponent(gap)}`,
+      {},
+      signal,
+    ),
+  reviewGap: (id: string, gap: string, decision: string) =>
+    privateRequest(
+      `/skill-gaps/runs/${encodeURIComponent(id)}/gaps/${encodeURIComponent(gap)}/review`,
+      json("PUT", { decision, note: "" }),
+    ),
   matchingReadiness: (signal?: AbortSignal) =>
     privateRequest<MatchReadiness>("/matching/readiness", {}, signal),
   matchingRuns: (signal?: AbortSignal) =>

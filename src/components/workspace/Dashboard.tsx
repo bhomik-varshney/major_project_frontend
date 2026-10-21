@@ -272,7 +272,7 @@ export function Dashboard() {
             <Link to="/applications" className="text-xs">
               <span className="text-muted-foreground">Pending approvals</span>
               <p className="mt-2">
-                {data.pending_approval_count ?? "Application review is coming next"}
+                {data.pending_approval_count ?? "Application reviews unavailable"}
               </p>
             </Link>
           </div>

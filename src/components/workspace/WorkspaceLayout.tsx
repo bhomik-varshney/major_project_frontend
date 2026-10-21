@@ -27,8 +27,9 @@ const navigation = [
   { to: "/documents", label: "Documents", icon: FileText },
   { to: "/jobs", label: "Opportunities", icon: BriefcaseBusiness },
   { to: "/matches", label: "My matches", icon: Target },
-  { to: "/skill-gaps", label: "Skill gaps", icon: Sparkles, planned: true },
-  { to: "/applications", label: "Applications", icon: CheckCheck, planned: true },
+  { to: "/skill-gaps", label: "Skill gaps", icon: Sparkles },
+  { to: "/applications", label: "Applications", icon: CheckCheck },
+  { to: "/cover-letters", label: "Cover letters", icon: FileText },
   { to: "/settings", label: "Workspace settings", icon: Settings2 },
 ] as const;
 

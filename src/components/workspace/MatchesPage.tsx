@@ -188,6 +188,20 @@ function MatchCard({
           estimate is not a hiring probability.
         </p>
       )}
+      <Link
+        to="/skill-gaps"
+        search={{ job: job.id, run: runId }}
+        className="mt-4 inline-flex items-center gap-2 text-xs text-accent"
+      >
+        Analyse skill gaps for this job <ArrowRight className="h-3 w-3" />
+      </Link>
+      <Link
+        to="/applications"
+        search={{ job: job.id, run: runId }}
+        className="ml-5 mt-4 inline-flex items-center gap-2 text-xs text-accent"
+      >
+        Prepare application for this job <ArrowRight className="h-3 w-3" />
+      </Link>
       {row.filter_evidence && (
         <div className="mt-3 space-y-1 text-[11px] text-muted-foreground">
           {Object.entries(row.filter_evidence)

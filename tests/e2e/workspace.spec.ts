@@ -194,18 +194,7 @@ test("panel highlight responds to mouse and respects reduced motion", async ({ p
   );
 });
 
-test("future routes are labeled, sample workspace remains separate", async ({ page }) => {
-  for (const route of ["/skill-gaps", "/applications"]) {
-    await page.goto(route);
-    await expect(page.getByRole("button", { name: "Check backend connection" })).toContainText(
-      "Connected",
-    );
-    await expect(
-      page.getByText("This feature is planned for the next implementation phase.", {
-        exact: false,
-      }),
-    ).toBeVisible();
-  }
+test("sample workspace remains separate from live applications", async ({ page }) => {
   await page.goto("/workspace");
   await expect(
     page.getByText("This workspace is an interactive product demonstration.", { exact: false }),

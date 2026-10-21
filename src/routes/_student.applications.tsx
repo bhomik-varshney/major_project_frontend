@@ -1,12 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { PlannedPage } from "@/components/workspace/shared";
+import { ApplicationsPage } from "@/components/workspace/ApplicationsPage";
 
 export const Route = createFileRoute("/_student/applications")({
   head: () => ({ meta: [{ title: "Your applications — Ascendra" }] }),
-  component: () => (
-    <PlannedPage
-      title="Your applications"
-      description="Keep track of reviewed drafts, decisions, and your next steps."
-    />
-  ),
+  validateSearch: (search: Record<string, unknown>): { job?: string; run?: string } => ({
+    ...(typeof search["job"] === "string" ? { job: search["job"] } : {}),
+    ...(typeof search["run"] === "string" ? { run: search["run"] } : {}),
+  }),
+  component: ApplicationsRoute,
 });
+
+function ApplicationsRoute() {
+  const search = Route.useSearch();
+  return <ApplicationsPage {...search} />;
+}
