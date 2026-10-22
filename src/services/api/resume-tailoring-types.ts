@@ -134,6 +134,17 @@ export type TailoredResume = {
       condensed?: { entry_id: string; before: string; after: string; reason: string }[];
       title_condensation?: { entry_id: string; before: string; after: string; reason: string }[];
       bullet_omissions?: { entry_id: string; source: string; original: string; reason: string }[];
+      bullet_changes?: { entry_id: string; before: string; after: string; source: string }[];
+      link_changes?: { entry_id: string; label: string; url: string; reason: string }[];
+      omitted_links?: { entry_id: string; label: string; url: string; reason: string }[];
+      skill_groups?: Record<string, string[]>;
+      skill_presentation?: { confirmed_labels: number; visible_labels: number; reason: string };
+      project_technology_emphasis?: {
+        entry_id: string;
+        shown: string[];
+        full: string[];
+        reason: string;
+      }[];
       keywords_addressed: string[];
       selected: {
         id: string;
@@ -175,6 +186,9 @@ export type TailoredResume = {
         body_font_pt?: number;
         content_height_ratio?: number;
         balance_observation?: string;
+        ligature_extraction_checked?: boolean;
+        readable_link_labels_checked?: boolean;
+        right_aligned_dates_checked?: number;
       };
       corrections?: { field: string; reason: string }[];
       attempts: {

@@ -176,8 +176,17 @@ test("one-page resume preview, comparison, approval and correct application atta
   await expect(
     page.getByRole("heading", { name: "Original confirmed content and tailored version" }),
   ).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Changed bullets", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Corrected links", exact: true })).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "GitHub: github.com/student/search-service", exact: true }),
+  ).toBeVisible();
   await page.getByRole("button", { name: "Validation results", exact: true }).click();
   await expect(page.getByText("One-page status: Exactly one page", { exact: true })).toBeVisible();
+  await expect(page.getByText("Readable links: Verified", { exact: true })).toBeVisible();
+  await expect(
+    page.getByText("Ligature-free text extraction: Verified", { exact: true }),
+  ).toBeVisible();
   await page.getByRole("button", { name: "PDF preview", exact: true }).click();
   await expect(page.getByRole("img", { name: "Rendered tailored resume PDF page" })).toBeVisible();
   const download = page.waitForEvent("download");

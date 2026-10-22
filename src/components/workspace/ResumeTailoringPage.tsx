@@ -42,8 +42,10 @@ function Entry({ entry }: { entry: ResumeEntry }) {
         <h3 className="font-medium">{entry.title}</h3>
         <span className="text-sm text-muted-foreground">{entry.period}</span>
       </div>
-      {entry.subtitle && <p className="mt-1 text-sm">{entry.subtitle}</p>}
-      {entry.location && <p className="mt-1 text-xs text-muted-foreground">{entry.location}</p>}
+      <div className="mt-1 flex flex-wrap justify-between gap-2 text-sm">
+        {entry.subtitle && <p>{entry.subtitle}</p>}
+        {entry.location && <p className="text-muted-foreground">{entry.location}</p>}
+      </div>
       {entry.grade && <p className="mt-2 text-sm">Grade / CGPA: {entry.grade}</p>}
       {entry.bullets.map((b) => (
         <p className="mt-2 text-sm leading-6" key={b.id}>
@@ -61,7 +63,7 @@ function Entry({ entry }: { entry: ResumeEntry }) {
           href={v.url}
           target="_blank"
           rel="noreferrer"
-          className="mr-3 mt-2 inline-block text-sm text-accent underline"
+          className="mr-3 mt-2 inline-block break-all text-sm text-accent underline"
         >
           {v.label}
         </a>
@@ -467,10 +469,10 @@ export function ResumeTailoringPage({ application: initial }: { application?: st
           <p role="status" className="mt-2 text-sm">
             {resume.stage}
           </p>
-          {resume.data.catalog && !resume.data.catalog.content_policy_version && (
+          {resume.data.catalog && resume.data.catalog.content_policy_version !== 3 && (
             <p className="mt-3 text-sm">
-              This saved version predates the complete-profile checks. Create another tailored
-              version to include the updated content and relevance analysis.
+              This saved version uses an earlier content and layout policy. Create another tailored
+              version to apply the refined summary, readable links and ATS checks.
             </p>
           )}
           {resume.error_code && (
@@ -813,13 +815,21 @@ export function ResumeTailoringPage({ application: initial }: { application?: st
                           <section key={s} className="space-y-3">
                             <h3 className="text-sm font-medium capitalize">{human(s)}</h3>
                             {s === "skills"
-                              ? [...new Set(entries.map((e) => e.skill_group))].map((group) => (
+                              ? Object.entries(
+                                  resume?.data.report?.skill_groups ||
+                                    Object.fromEntries(
+                                      [...new Set(entries.map((e) => e.skill_group))].map(
+                                        (group) => [
+                                          group,
+                                          entries
+                                            .filter((e) => e.skill_group === group)
+                                            .map((e) => e.title),
+                                        ],
+                                      ),
+                                    ),
+                                ).map(([group, labels]) => (
                                   <p key={group} className="text-sm leading-6">
-                                    <strong>{group}:</strong>{" "}
-                                    {entries
-                                      .filter((e) => e.skill_group === group)
-                                      .map((e) => e.title)
-                                      .join(", ")}
+                                    <strong>{group}:</strong> {labels.join(", ")}
                                   </p>
                                 ))
                               : entries.map((e) => <Entry key={e.id} entry={e} />)}
@@ -870,6 +880,51 @@ export function ResumeTailoringPage({ application: initial }: { application?: st
                 </div>
               </section>
             ))}
+            <section className="mt-5 space-y-3" aria-label="Bullet wording changes">
+              <h3 className="text-sm font-medium">Changed bullets</h3>
+              {resume?.data.report?.bullet_changes?.map((change, i) => (
+                <article key={i} className="rounded-xl border border-border p-4 text-sm leading-6">
+                  <p className="text-muted-foreground">Original: {change.before}</p>
+                  <p className="mt-2">Tailored: {change.after}</p>
+                </article>
+              ))}
+            </section>
+            <section className="mt-5 space-y-3" aria-label="Corrected links">
+              <h3 className="text-sm font-medium">Corrected links</h3>
+              {resume?.data.report?.link_changes?.map((link, i) => (
+                <p key={i} className="text-sm">
+                  <a
+                    href={link.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="break-all text-accent underline"
+                  >
+                    {link.label}
+                  </a>{" "}
+                  — {link.reason}
+                </p>
+              ))}
+              {resume?.data.report?.omitted_links?.map((link, i) => (
+                <p key={`omitted-${i}`} className="text-sm">
+                  <a
+                    href={link.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="break-all text-accent underline"
+                  >
+                    {link.label}
+                  </a>{" "}
+                  — {link.reason}
+                </p>
+              ))}
+            </section>
+            {resume?.data.report?.skill_presentation && (
+              <p className="mt-5 text-sm">
+                {resume.data.report.skill_presentation.confirmed_labels} confirmed skill labels
+                represented by {resume.data.report.skill_presentation.visible_labels} distinct
+                displayed labels. {resume.data.report.skill_presentation.reason}
+              </p>
+            )}
           </>
         )}
         {view === "PDF preview" && (
@@ -921,6 +976,20 @@ export function ResumeTailoringPage({ application: initial }: { application?: st
                 {resume?.data.render?.quality?.fonts_embedded ? "Verified" : "Pending"}
               </p>
               <p>
+                Readable links:{" "}
+                {resume?.data.render?.quality?.readable_link_labels_checked
+                  ? "Verified"
+                  : "Pending"}
+              </p>
+              <p>
+                Ligature-free text extraction:{" "}
+                {resume?.data.render?.quality?.ligature_extraction_checked ? "Verified" : "Pending"}
+              </p>
+              <p>
+                Dates aligned to the right:{" "}
+                {resume?.data.render?.quality?.right_aligned_dates_checked ?? "Pending"}
+              </p>
+              <p>
                 Immutable fields:{" "}
                 {resume?.data.validation?.immutable_fields_checked
                   ? "Checked against confirmed profile"
@@ -954,7 +1023,7 @@ export function ResumeTailoringPage({ application: initial }: { application?: st
               exact bytes to this job and profile revision.
             </p>
             {resume?.status === "needs_review" &&
-              resume.data.catalog?.content_policy_version === 2 && (
+              resume.data.catalog?.content_policy_version === 3 && (
                 <div className="mt-5 space-y-4">
                   <label className="flex gap-3 text-sm">
                     <input
